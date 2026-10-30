@@ -1,0 +1,13 @@
+{
+  "fecha_y_hora": "2026-10-29T14:10:06",
+  "donde": "local",
+  "experimento": "creditsight-registro",
+  "modelo_registrado": "creditsight_credit_score",
+  "version": 1,
+  "alias": "champion",
+  "ejecucion": "a52daa3a33084629bda724f06db98cd7",
+  "ida_y_vuelta_ok": true,
+  "modelo": "random forest",
+  "calibrado": false,
+  "decisiones_congeladas": "2026-10-28T17:25:46"
+}

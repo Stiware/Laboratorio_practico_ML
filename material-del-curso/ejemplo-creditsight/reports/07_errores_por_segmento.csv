@@ -1,0 +1,23 @@
+,,cliente-mes,costo medio,% Poor real,recall Poor
+edad,≤25,5568,0.4355,0.3283,0.9075
+edad,26–35,5824,0.4645,0.2967,0.8547
+edad,36–50,7192,0.5014,0.2825,0.8027
+edad,>50,1416,0.5586,0.0975,0.3333
+ingreso,bajo,6672,0.4264,0.3772,0.9174
+ingreso,medio,6664,0.4874,0.2863,0.8223
+ingreso,alto,6664,0.5153,0.1952,0.7187
+Occupation,Accountant,1248,0.5304,0.3005,0.8613
+Occupation,Architect,1432,0.4714,0.2116,0.7393
+Occupation,Developer,1296,0.4606,0.2978,0.8756
+Occupation,Doctor,1464,0.5499,0.3081,0.7472
+Occupation,Engineer,1408,0.4858,0.3295,0.8427
+Occupation,Entrepreneur,1400,0.445,0.2764,0.9018
+Occupation,Journalist,1304,0.4724,0.2362,0.8864
+Occupation,Lawyer,1344,0.4993,0.2738,0.856
+Occupation,Manager,1408,0.5021,0.2557,0.8056
+Occupation,Mechanic,1504,0.4315,0.2999,0.8581
+Occupation,Media_Manager,1208,0.447,0.2475,0.8863
+Occupation,Musician,1216,0.5156,0.2878,0.7886
+Occupation,Scientist,1312,0.455,0.33,0.8337
+Occupation,Teacher,1184,0.4569,0.2914,0.9101
+Occupation,Writer,1272,0.419,0.3506,0.8296

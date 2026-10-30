@@ -1,0 +1,38 @@
+{
+  "fecha_y_hora": "2026-10-28T17:25:46",
+  "modelo_final": "random forest",
+  "parametros": "de partida (la optimización no mejoró de forma distinguible)",
+  "calibrar": false,
+  "metrica_principal": "costo esperado por cliente-mes con la matriz de costos (menor es mejor)",
+  "metrica_de_control": "AUC macro uno-contra-resto (mayor es mejor)",
+  "regla_de_decision": "clase de menor costo esperado: argmin_j sum_i p_i · costo(i, j)",
+  "como_se_decidio": "reserva de clientes de la etapa 6 (25 % del entrenamiento); la prueba no se miró",
+  "reserva": [
+    {
+      "modelo": "lightgbm",
+      "costo de partida": 0.47985,
+      "costo optimizado": 0.47415,
+      "diferencia (opt. − partida)": -0.0057,
+      "IC 95 % inf.": -0.01425125,
+      "IC 95 % sup.": 0.0026,
+      "¿mejora real?": "no distinguible",
+      "configuración elegida": "de partida"
+    },
+    {
+      "modelo": "random forest",
+      "costo de partida": 0.48145,
+      "costo optimizado": 0.47635,
+      "diferencia (opt. − partida)": -0.0051,
+      "IC 95 % inf.": -0.0107,
+      "IC 95 % sup.": 0.00010249999999999773,
+      "¿mejora real?": "no distinguible",
+      "configuración elegida": "de partida"
+    }
+  ],
+  "calibracion": {
+    "log_loss_sin": 0.6708248583112357,
+    "log_loss_con": 0.675724325275,
+    "costo_sin": 0.48145,
+    "costo_con": 0.4777
+  }
+}

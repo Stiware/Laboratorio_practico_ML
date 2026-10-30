@@ -1,0 +1,77 @@
+{
+  "modelo_final": "random forest",
+  "decisiones": "2026-10-28T17:25:46",
+  "prueba": {
+    "filas": 20000,
+    "clientes": 2500
+  },
+  "metricas_modelo": {
+    "cost": 0.47635,
+    "cost_argmax": 0.743,
+    "accuracy": 0.63595,
+    "balanced_accuracy": 0.5422497083803064,
+    "macro_f1": 0.5007476611645431,
+    "macro_f1_argmax": 0.6862444396718699,
+    "precision_macro": 0.6899621926716769,
+    "precision_poor": 0.6035109717868339,
+    "recall_poor": 0.840551868669228,
+    "recall_standard": 0.7263705103969754,
+    "recall_good": 0.059826746074715755,
+    "auc_ovr": 0.8542210100149507,
+    "auc_poor": 0.8710041989932968,
+    "pr_auc_poor": 0.7167953562739964,
+    "log_loss": 0.6632099332983544
+  },
+  "metricas_baseline": {
+    "cost": 1.0436,
+    "cost_argmax": 1.0436,
+    "accuracy": 0.529,
+    "balanced_accuracy": 0.3333333333333333,
+    "macro_f1": 0.23065184216263354,
+    "macro_f1_argmax": 0.23065184216263354,
+    "precision_macro": 0.17633333333333334,
+    "precision_poor": 0.0,
+    "recall_poor": 0.0,
+    "recall_standard": 1.0,
+    "recall_good": 0.0,
+    "auc_ovr": 0.5,
+    "auc_poor": 0.5,
+    "pr_auc_poor": 0.2863,
+    "log_loss": 16.976560746274178
+  },
+  "intervalos": [
+    {
+      "medida": "costo esperado (menor es mejor)",
+      "valor": 0.47635,
+      "IC 95 % inferior": 0.456145,
+      "IC 95 % superior": 0.49768125
+    },
+    {
+      "medida": "AUC macro (mayor es mejor)",
+      "valor": 0.8542210100149507,
+      "IC 95 % inferior": 0.845817315647276,
+      "IC 95 % superior": 0.8617836117846231
+    },
+    {
+      "medida": "costo: modelo − baseline",
+      "valor": -0.56725,
+      "IC 95 % inferior": -0.61021375,
+      "IC 95 % superior": -0.52279125
+    },
+    {
+      "medida": "AUC: modelo − baseline",
+      "valor": 0.35422101001495065,
+      "IC 95 % inferior": 0.3458173156472761,
+      "IC 95 % superior": 0.3617836117846231
+    }
+  ],
+  "supera_al_baseline_con_confianza": true,
+  "revision": {
+    "porcentaje_marcado": 0.41205,
+    "poor_capturados": 0.924554662940971
+  },
+  "variables_sensibles": [
+    "Age",
+    "Occupation"
+  ]
+}

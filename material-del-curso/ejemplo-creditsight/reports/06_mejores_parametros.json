@@ -1,0 +1,28 @@
+{
+  "lightgbm": {
+    "trial": 10,
+    "metrica_optimizada": "cost",
+    "cost_cv": 0.48563199887978653,
+    "auc_ovr_cv": 0.8536229845416146,
+    "params": {
+      "subsample": 0.9556890596561958,
+      "learning_rate": 0.026515239227630133,
+      "colsample_bytree": 0.6961431137241079,
+      "num_leaves": 29,
+      "n_estimators": 185,
+      "reg_lambda": 0.6700560477264875,
+      "min_child_samples": 129
+    }
+  },
+  "random forest": {
+    "trial": 9,
+    "metrica_optimizada": "cost",
+    "cost_cv": 0.4795152449517725,
+    "auc_ovr_cv": 0.8533303972562664,
+    "params": {
+      "max_features": 0.2371603301759982,
+      "min_samples_leaf": 12,
+      "max_depth": 15
+    }
+  }
+}

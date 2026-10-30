@@ -1,0 +1,1 @@
+Prueba abierta el 2026-10-28T17:26:22 · modelo random forest · 20,000 filas, 2,500 clientes. Una sola vez.
