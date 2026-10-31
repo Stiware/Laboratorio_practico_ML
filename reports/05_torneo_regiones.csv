@@ -1,0 +1,41 @@
+modelo,grupo,n_pedidos,mae,tarde
+"LightGBM cuantil 0,75",Centro-Oeste,4467,6.199875,0.255876
+"LightGBM cuantil 0,75",Nordeste,7223,8.606391,0.264433
+"LightGBM cuantil 0,75",Norte,1480,9.04285,0.264189
+"LightGBM cuantil 0,75",Sudeste,52666,5.207093,0.255098
+"LightGBM cuantil 0,75",Sul,11088,6.203125,0.256584
+"HistGradientBoosting cuantil 0,75",Centro-Oeste,4467,6.27773,0.252966
+"HistGradientBoosting cuantil 0,75",Nordeste,7223,8.633833,0.26471
+"HistGradientBoosting cuantil 0,75",Norte,1480,9.013886,0.270946
+"HistGradientBoosting cuantil 0,75",Sudeste,52666,5.238879,0.253066
+"HistGradientBoosting cuantil 0,75",Sul,11088,6.269457,0.251443
+LightGBM,Centro-Oeste,4467,5.236855,0.270428
+LightGBM,Nordeste,7223,7.305433,0.30569
+LightGBM,Norte,1480,7.765047,0.333108
+LightGBM,Sudeste,52666,4.494442,0.231003
+LightGBM,Sul,11088,5.305603,0.260552
+XGBoost,Centro-Oeste,4467,5.285946,0.272218
+XGBoost,Nordeste,7223,7.324867,0.310259
+XGBoost,Norte,1480,7.785918,0.320946
+XGBoost,Sudeste,52666,4.49669,0.230395
+XGBoost,Sul,11088,5.322716,0.26452
+"XGBoost cuantil 0,75",Centro-Oeste,4467,6.389518,0.252518
+"XGBoost cuantil 0,75",Nordeste,7223,8.463499,0.278001
+"XGBoost cuantil 0,75",Norte,1480,8.718641,0.294595
+"XGBoost cuantil 0,75",Sudeste,52666,5.365242,0.245566
+"XGBoost cuantil 0,75",Sul,11088,6.413179,0.252255
+Bosque aleatorio liviano,Centro-Oeste,4467,5.419845,0.267517
+Bosque aleatorio liviano,Nordeste,7223,7.368174,0.310674
+Bosque aleatorio liviano,Norte,1480,7.741372,0.339189
+Bosque aleatorio liviano,Sudeste,52666,4.548313,0.231649
+Bosque aleatorio liviano,Sul,11088,5.447442,0.264701
+Regresión lineal,Centro-Oeste,4467,5.338726,0.271547
+Regresión lineal,Nordeste,7223,7.338659,0.303475
+Regresión lineal,Norte,1480,7.756153,0.314189
+Regresión lineal,Sudeste,52666,4.624517,0.231003
+Regresión lineal,Sul,11088,5.44745,0.264971
+Ridge,Centro-Oeste,4467,5.338803,0.271547
+Ridge,Nordeste,7223,7.338774,0.303475
+Ridge,Norte,1480,7.755876,0.314865
+Ridge,Sudeste,52666,4.624501,0.230984
+Ridge,Sul,11088,5.447462,0.265061
