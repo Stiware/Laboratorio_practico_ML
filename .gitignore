@@ -15,6 +15,11 @@ __pycache__/
 data/raw/*
 !data/raw/.gitkeep
 
+# Datos limpios que genera el notebook 03: se regeneran con el código, NO se versionan
+# (material-del-curso/kit/guia-eda-y-preprocesamiento.md, sección 4.4). Incluye la prueba cerrada.
+data/processed/*
+!data/processed/.gitkeep
+
 # Sistema operativo y editores
 .DS_Store
 Thumbs.db

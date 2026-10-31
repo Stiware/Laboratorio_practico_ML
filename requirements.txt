@@ -17,6 +17,7 @@ databricks-sdk==0.153.0
 python-dotenv==1.2.4
 streamlit==1.66.0
 joblib==1.6.0
+pyarrow==25.0.1
 pytest==9.1.1
 nbconvert==7.17.2
 nbformat==5.11.1
