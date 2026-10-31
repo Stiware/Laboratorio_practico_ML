@@ -1,0 +1,15 @@
+idea,grupo,mae_media,mae_desv,mae_mejora,mae_ruido,mae_mejora_ruido,costo_media,costo_mejora,costo_mejora_ruido,adelante_mejora,adelante_mae,decision,motivo
+Referencia (variables base),(base),5.211086,0.017222,,,,10.422784,,,,5.67579,referencia,variables base; punto de comparación
+F1 logaritmos,logs,5.148885,0.010007,0.062202,0.008484,7.332057,10.298801,0.123983,6.829235,0.047115,5.628675,conservar,"mejora / ruido = 7,33 y no empeora hacia adelante (0,05 días)"
+F2 mismo estado,same_state,5.151236,0.016506,0.05985,0.004202,14.243565,10.30337,0.119415,7.759114,0.09549,5.5803,conservar,"mejora / ruido = 14,24 y no empeora hacia adelante (0,10 días)"
+F3 regiones,regions,5.207669,0.016817,0.003418,0.001428,2.392835,10.41584,0.006945,4.367538,0.005867,5.669923,conservar,"mejora / ruido = 2,39 y no empeora hacia adelante (0,0059 días)"
+F5 día de la semana,calendar,5.195603,0.018515,0.015483,0.003461,4.473757,10.392022,0.030762,3.547136,0.018097,5.657693,conservar,"mejora / ruido = 4,47 y no empeora hacia adelante (0,02 días)"
+F6 temporada alta de fin de año,peak_season,5.141884,0.010791,0.069202,0.01029,6.725288,10.284514,0.138271,6.289742,,,conservar,"mejora / ruido = 6,73; no evaluable hacia adelante"
+F7 distancia × mismo estado,distance_interaction,5.119888,0.012366,0.091198,0.006075,15.011814,10.240556,0.182228,12.450294,0.139638,5.536152,conservar,"mejora / ruido = 15,01 y no empeora hacia adelante (0,14 días)"
+F8 historial vendedor / categoría / ruta,history,4.972271,0.025249,0.238815,0.02699,8.848428,9.934338,0.488447,8.529312,-0.085077,5.760867,descartar,"mejora / ruido = 8,85, pero empeora hacia adelante (-0,09 días)"
+F9 razones de flete y densidad,ratios,5.210639,0.017427,0.000447,0.000438,1.020054,10.421836,0.000949,1.445043,0.000888,5.674902,conservar,"mejora / ruido = 1,02 y no empeora hacia adelante (0,0009 días)"
+F10 varios vendedores,multi_seller,5.205688,0.019962,0.005399,0.004549,1.186797,10.411924,0.01086,1.596612,0.011502,5.664288,conservar,"mejora / ruido = 1,19 y no empeora hacia adelante (0,01 días)"
+F4 plazo prometido por Olist (referencia),(referencia),5.069415,0.011059,0.141671,0.010628,13.330146,10.139059,0.283725,18.768788,0.366115,5.309675,referencia,no usable en producción: la app fija la fecha y no conoce el plazo prometido
+Línea base trivial (siempre la mediana),(trivial),6.036009,0.025332,-0.824922,0.020044,-41.155319,14.333626,-3.910842,-73.52589,-0.331341,6.007131,línea base,regla trivial: predecir siempre la mediana del entrenamiento
+Conjunto conservado,logs + same_state + regions + calendar + peak_season + distance_interaction + ratios + multi_seller,5.032638,0.012046,0.178448,0.014159,12.603205,10.066101,0.356683,12.730559,0.372887,5.302903,comprobación,conjunto de ideas medido junto; no se decide
+Conjunto conservado sin la marca de fin de año (sensibilidad),logs + same_state + regions + calendar + distance_interaction + ratios + multi_seller,5.096137,0.016731,0.11495,0.009162,12.546838,10.192923,0.229862,11.161992,0.133069,5.542721,comprobación,conjunto de ideas medido junto; no se decide
