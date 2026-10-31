@@ -85,6 +85,6 @@ El grupo revisó las 10 decisiones y **acordó que todas son relevantes**. Son l
 | 31 oct 2026 | **Temporadas:** el mes de compra suelto se descarta y se prueba una marca de temporada alta de fin de año con calendario fijo. Se agrega una prueba hacia adelante (entrenar hasta feb-2018, validar mar a ago-2018). | El patrón mensual de ene–ago casi no se repite entre 2017 y 2018 (correlación 0,14: es tendencia, no temporada); el pico de fin de año solo se observa una vez (2017). El día de la semana sí es estable (correlación 0,72). | `especificaciones/04-features.md` Q3 |
 
 | 31 oct 2026 | El grupo **confirmó** las decisiones de la etapa 4 (Q1 a Q4 y las ideas de variables) y las registró en la sección 7 de `especificacion-proyecto.md`. Especificación de la etapa 4 cerrada. | Requisito antes de pasar a Spec Kit. | `especificaciones/04-features.md` |
-| 31 oct 2026 | **Flujo de trabajo:** todo en `main`, sin más ramas. La rama `etapa-3-preprocesamiento` se fusionó a `main` y se eliminó. | Decisión del grupo: un solo historial. | repositorio |
+| 31 oct 2026 | **Flujo de trabajo:** todo en `main`, sin más ramas. La rama `etapa-3-preprocesamiento` se fusionó a `main` (avance directo, sin conflictos); queda pendiente borrarla del repositorio. | Decisión del grupo: un solo historial. | repositorio |
 
 _(Las siguientes líneas se agregan al avanzar: etapa 4 y siguientes.)_
