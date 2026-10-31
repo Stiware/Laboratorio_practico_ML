@@ -4,7 +4,7 @@
 > lo ejecutan (3 y 4). El resultado final, con las decisiones, va a `reports/01_eda.md`.
 > Guía: `material-del-curso/kit/guia-eda-y-preprocesamiento.md` · Ejemplo: `material-del-curso/ejemplo-creditsight/reports/01_eda.md`.
 
-**Grupo:** _______________   **Fecha:** 30 oct 2026   **Estado:** ☒ borrador  ☐ cerrada _(falta que el grupo valide las decisiones)_
+**Grupo:** _______________   **Fecha:** 30 oct 2026   **Estado:** ☐ borrador  ☒ cerrada _(el grupo validó las 10 decisiones el 31 oct 2026)_
 
 ## 1. Qué esperamos encontrar (se escribe ANTES de mirar los datos)
 
