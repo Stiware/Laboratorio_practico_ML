@@ -1,7 +1,10 @@
-"""Pruebas de las variables derivadas: ubicación y distancia (decisión 6) y categorías raras (decisión 8)."""
+"""Pruebas de las variables derivadas: ubicación y distancia (decisión 6), categorías raras (decisión 8)
+y las variables nuevas de la etapa 4 (`engineering.py`)."""
 import numpy as np
 import pandas as pd
+import pytest
 
+import olistbr.features.engineering as eng
 from olistbr.features.categories import frequent_values, group_rare_categories
 from olistbr.features.geo import add_distance, haversine_km, zip_centroids
 
@@ -139,3 +142,264 @@ def test_frequent_list_is_not_recomputed_from_test():
     test = pd.DataFrame({"seller_id": ["s2"] * 30, "main_seller_items": [1] * 30})  # frecuente solo en test
     frequent = frequent_values(train, "seller_id", "main_seller_items")
     assert set(group_rare_categories(test, "seller_id", frequent)["seller_id"]) == {"otros"}
+
+
+# =============================== Etapa 4: add_features (variables sin estado) ===============================
+
+
+def _features(features_frame, changes=None):
+    """add_features sobre la tabla de ejemplo, indexada por order_id; `changes` = {(order_id, columna): valor}."""
+    frame = features_frame.copy()
+    for (order_id, column), value in (changes or {}).items():
+        frame.loc[frame["order_id"] == order_id, column] = value
+    return eng.add_features(frame).set_index("order_id")
+
+
+def test_log_features(features_frame):
+    """F1: log1p de cada columna; vacío o negativo -> NaN."""
+    out = _features(features_frame)
+    assert out.loc["o0", "log_distance"] == pytest.approx(np.log1p(500))
+    assert out.loc["o0", "log_freight"] == pytest.approx(np.log1p(20))
+    assert out.loc["o0", "log_price"] == pytest.approx(np.log1p(100))
+    assert out.loc["o0", "log_weight"] == pytest.approx(np.log1p(1000))
+    assert out.loc["o0", "log_volume"] == pytest.approx(np.log1p(2000))
+    assert out.loc["o1", "log_distance"] == 0.0 and out.loc["o1", "log_price"] == 0.0  # log1p(0) = 0
+    assert np.isnan(out.loc["o2", "log_distance"])  # dato vacío
+    assert np.isnan(out.loc["o6", "log_distance"]) and np.isnan(out.loc["o6", "log_price"])  # negativos
+
+
+def test_same_state(features_frame):
+    """F2: SP/SP -> 1, SP/RJ -> 0, estado vacío -> NaN."""
+    out = _features(features_frame, {("o3", "seller_state"): np.nan})
+    assert out.loc["o1", "same_state"] == 1.0
+    assert out.loc["o0", "same_state"] == 0.0
+    assert np.isnan(out.loc["o3", "same_state"])
+
+
+def test_regions_table(features_frame):
+    """F3: SP -> Sudeste, AM -> Norte, estado fuera de la tabla -> NaN."""
+    out = _features(features_frame)
+    assert out.loc["o0", "seller_region"] == "Sudeste" and out.loc["o0", "customer_region"] == "Sudeste"
+    assert out.loc["o3", "customer_region"] == "Norte"
+    assert pd.isna(out.loc["o2", "customer_region"])  # "XX" no existe en la tabla
+
+
+def test_region_table_covers_27_states():
+    assert len(eng.REGION_BY_STATE) == 27
+    assert set(eng.REGION_BY_STATE.values()) == {"Norte", "Nordeste", "Centro-Oeste", "Sudeste", "Sul"}
+    assert eng.REGION_BY_STATE["SP"] == "Sudeste" and eng.REGION_BY_STATE["AM"] == "Norte"
+    assert eng.REGION_BY_STATE["BA"] == "Nordeste" and eng.REGION_BY_STATE["DF"] == "Centro-Oeste"
+    assert eng.REGION_BY_STATE["RS"] == "Sul"
+
+
+def test_calendar_features(features_frame):
+    """F5: día de la semana como texto (0 = lunes); marca jueves a sábado; fecha vacía -> NaN."""
+    out = _features(features_frame, {("o4", "order_purchase_timestamp"): pd.NaT})
+    assert out.loc["o0", "purchase_dow"] == "0" and out.loc["o0", "is_slow_weekday"] == 0.0  # lunes
+    assert out.loc["o1", "purchase_dow"] == "3" and out.loc["o1", "is_slow_weekday"] == 1.0  # jueves
+    assert out.loc["o6", "is_slow_weekday"] == 1.0  # viernes
+    assert out.loc["o7", "purchase_dow"] == "5" and out.loc["o7", "is_slow_weekday"] == 1.0  # sábado
+    assert out.loc["o2", "purchase_dow"] == "6" and out.loc["o2", "is_slow_weekday"] == 0.0  # domingo
+    assert pd.isna(out.loc["o4", "purchase_dow"]) and np.isnan(out.loc["o4", "is_slow_weekday"])
+
+
+def test_black_friday_dates():
+    """Black Friday = cuarto viernes de noviembre."""
+    assert eng.black_friday(2017) == pd.Timestamp("2017-11-24")
+    assert eng.black_friday(2018) == pd.Timestamp("2018-11-23")
+
+
+def test_year_end_peak_window(features_frame):
+    """F6: 1 desde el lunes de la semana de Black Friday (2017-11-20) hasta el 31 de diciembre; si no, 0."""
+    out = _features(features_frame)
+    assert out.loc["o2", "is_year_end_peak"] == 0.0  # 2017-11-19, un día antes
+    assert out.loc["o3", "is_year_end_peak"] == 1.0  # 2017-11-20
+    assert out.loc["o4", "is_year_end_peak"] == 1.0  # 2017-12-31
+    assert out.loc["o5", "is_year_end_peak"] == 0.0  # 2018-01-01
+    assert out.loc["o0", "is_year_end_peak"] == 0.0  # marzo
+
+
+def test_distance_interaction(features_frame):
+    out = _features(features_frame)
+    assert out.loc["o4", "log_distance_x_same_state"] == pytest.approx(np.log1p(10) * 1.0)  # mismo estado
+    assert out.loc["o0", "log_distance_x_same_state"] == 0.0  # distinto estado
+    assert np.isnan(out.loc["o2", "log_distance_x_same_state"])  # distancia vacía
+
+
+def test_route(features_frame):
+    out = _features(features_frame, {("o3", "customer_state"): np.nan})
+    assert out.loc["o0", "route"] == "SP→RJ"
+    assert pd.isna(out.loc["o3", "route"])
+
+
+def test_ratios_and_density(features_frame):
+    out = _features(features_frame)
+    assert out.loc["o0", "freight_ratio"] == pytest.approx(0.2)  # 20 / 100
+    assert out.loc["o0", "density"] == pytest.approx(0.5)  # 1000 / 2000
+    assert np.isnan(out.loc["o1", "freight_ratio"])  # precio 0
+    assert np.isnan(out.loc["o1", "density"])  # volumen 0
+    assert np.isnan(out.loc["o2", "freight_ratio"]) and np.isnan(out.loc["o2", "density"])  # vacíos
+
+
+def test_multi_seller(features_frame):
+    """F10: 1 si hay más ítems que los del vendedor principal."""
+    out = _features(features_frame)
+    assert out.loc["o0", "multi_seller"] == 1.0  # 3 ítems, 2 del principal
+    assert out.loc["o1", "multi_seller"] == 0.0  # 3 y 3
+    assert out.loc["o7", "multi_seller"] == 1.0  # 2 y 1
+
+
+def test_promised_days(features_frame):
+    """F4 (solo referencia): días entre la compra y la fecha prometida."""
+    out = _features(features_frame)
+    assert out.loc["o0", "promised_days"] == pytest.approx(24.0)
+    assert np.isnan(out.loc["o2", "promised_days"])
+
+
+def test_division_by_zero_or_missing_gives_nan_not_inf(features_frame):
+    """Ninguna variable numérica derivada contiene infinito (división por cero o dato ausente -> NaN)."""
+    out = eng.add_features(features_frame)
+    numeric = out.select_dtypes("number").to_numpy(dtype=float)
+    assert not np.isinf(numeric).any()
+
+
+def test_add_features_does_not_mutate_input(features_frame):
+    before = features_frame.copy(deep=True)
+    eng.add_features(features_frame)
+    pd.testing.assert_frame_equal(features_frame, before)
+    assert "log_distance" not in features_frame.columns
+
+
+# ====================== Etapa 4: grupos de ideas y preprocesador (dentro del Pipeline) ======================
+
+ALL_GROUPS = list(eng.GROUPS)
+
+
+def test_nine_groups_and_no_reference_column_in_them():
+    assert ALL_GROUPS == [
+        "logs", "same_state", "regions", "calendar", "peak_season",
+        "distance_interaction", "history", "ratios", "multi_seller",
+    ]
+
+
+def test_feature_columns_toggles():
+    base = eng.feature_columns()
+    assert base.numeric == eng.BASE_NUMERIC and base.categorical == eng.BASE_CATEGORICAL
+    assert base.target_encoded == []
+
+    logs = eng.feature_columns(["logs"])
+    assert "log_distance" in logs.numeric and "log_distance" not in base.numeric
+
+    regions = eng.feature_columns(["regions"])
+    assert "customer_region" in regions.categorical and "seller_region" in regions.categorical
+
+    calendar = eng.feature_columns(["calendar"])
+    assert "purchase_dow" in calendar.categorical and "is_slow_weekday" in calendar.numeric
+
+    history = eng.feature_columns(["history"])
+    assert history.target_encoded == ["seller_id", "product_category_name", "route"]
+
+    # varios grupos: las columnas repetidas se cuentan una sola vez (log_distance y same_state están en dos)
+    several = eng.feature_columns(["logs", "same_state", "distance_interaction"])
+    assert len(several.numeric) == len(set(several.numeric))
+    assert several.numeric.count("log_distance") == 1 and several.numeric.count("same_state") == 1
+    assert "log_distance_x_same_state" in several.numeric
+
+
+def test_unknown_group_raises():
+    with pytest.raises(ValueError, match="grupo"):
+        eng.feature_columns(["no_existe"])
+
+
+def test_promised_days_never_in_any_group_combination():
+    """El plazo prometido por Olist solo se puede pedir con include_reference=True (para medirlo una vez)."""
+    import itertools
+
+    for size in range(len(ALL_GROUPS) + 1):
+        for combo in itertools.combinations(ALL_GROUPS, size):
+            cols = eng.feature_columns(combo)
+            assert "promised_days" not in cols.numeric + cols.categorical + cols.target_encoded
+    reference = eng.feature_columns(include_reference=True)
+    assert "promised_days" in reference.numeric
+
+
+def _training_table(frame_factory, groups, n=120):
+    """Tabla de entrenamiento con las variables derivadas, y su objetivo."""
+    df = eng.add_features(frame_factory(n))
+    return df, df["dias_entrega"]
+
+
+def test_preprocessor_handles_unseen_category_and_missing(frame_factory):
+    """Un vendedor y una ruta nunca vistos, más datos vacíos, no dejan vacíos ni fallan."""
+    train, y = _training_table(frame_factory, ALL_GROUPS)
+    prep = eng.build_preprocessor(ALL_GROUPS).fit(train, y)
+    new = train.iloc[:5].copy()
+    new["seller_id"] = "vendedor_nunca_visto"
+    new["product_category_name"] = "categoria_nueva"
+    new["seller_state"] = "ZZ"
+    new.loc[new.index[:2], ["weight_g_sum", "volume_cm3_sum", "distance_km"]] = np.nan
+    new = eng.add_features(new[[c for c in new.columns if c in frame_factory(5).columns]])
+    assert not np.isnan(prep.transform(new)).any()
+
+
+def test_preprocessor_output_has_no_missing_or_infinite(frame_factory):
+    df = eng.add_features(frame_factory(150, seed=1))
+    df.loc[df.index[:10], "price_sum"] = 0.0  # razones con denominador cero -> vacío -> se imputa
+    df.loc[df.index[10:20], "distance_km"] = np.nan
+    df = eng.add_features(df[frame_factory(5).columns])
+    prep = eng.build_preprocessor(ALL_GROUPS)
+    matrix = prep.fit_transform(df, df["dias_entrega"])
+    assert np.isfinite(matrix).all()
+
+
+def test_history_group_uses_target_encoder(frame_factory):
+    train, y = _training_table(frame_factory, ["history"])
+    with_history = eng.build_preprocessor(["history"]).fit(train, y)
+    without = eng.build_preprocessor([]).fit(train, y)
+    names_with = [name for name, *_ in with_history.transformers_]
+    names_without = [name for name, *_ in without.transformers_]
+    assert "history" in names_with and "history" not in names_without
+    assert with_history.transform(train).shape[1] == without.transform(train).shape[1] + 3  # una columna por variable
+
+
+def test_history_does_not_use_own_target(frame_factory):
+    """Una fila de entrenamiento no usa su propio objetivo en su promedio histórico (validación cruzada interna)."""
+    df = eng.add_features(frame_factory(120, seed=3))
+    df["seller_id"] = "s1"  # un solo vendedor, así el promedio histórico depende solo de los demás pedidos
+    y = pd.Series(10.0, index=df.index)
+    y.iloc[0] = 1000.0  # un pedido atípico
+    prep = eng.build_preprocessor(["history"]).fit(df, y)
+    matrix = prep.transform(df)  # transform (no fit_transform): usa el promedio global del vendedor
+    fitted = prep.fit_transform(df, y)  # fit_transform: cada fila usa solo las demás
+    seller_column = fitted[:, -3]
+    others = np.delete(seller_column, 0)
+    assert seller_column[0] == pytest.approx(10.0, abs=1.5)  # sin fuga ≈ 10; con su propio 1000 daría ≈ 20
+    assert seller_column[0] < others.max()  # las filas de otros pliegues sí ven el 1000
+    assert matrix.shape == fitted.shape
+
+
+def test_validation_row_gets_the_training_average_not_its_own_target(frame_factory):
+    """Una fila de validación recibe el promedio de ENTRENAMIENTO de su vendedor (`transform` no ve su objetivo)."""
+    train = eng.add_features(frame_factory(150, seed=7))
+    prep = eng.build_preprocessor(["history"]).fit(train, train["dias_entrega"])
+    encoder = prep.named_transformers_["history"].named_steps["target"]
+    categories = list(encoder.categories_[0])  # la primera columna con historial es seller_id
+    expected = encoder.encodings_[0][categories.index("s1")]
+
+    valid = eng.add_features(frame_factory(30, seed=8))
+    valid["seller_id"] = "s1"
+    valid["dias_entrega"] = 99999.0  # un objetivo absurdo: si se usara, el valor se dispararía
+    seller_encoding = prep.transform(valid)[:, -3]
+    np.testing.assert_allclose(seller_encoding, expected)
+
+
+def test_infinite_inputs_give_missing_not_infinite(features_frame):
+    """Un infinito de entrada (dato corrupto) tampoco produce infinitos en las variables derivadas."""
+    frame = features_frame.copy()
+    frame.loc[frame["order_id"] == "o0", ["distance_km", "price_sum"]] = np.inf
+    frame.loc[frame["order_id"] == "o3", "volume_cm3_sum"] = np.inf
+    out = eng.add_features(frame).set_index("order_id")
+    assert np.isnan(out.loc["o0", "log_distance"]) and np.isnan(out.loc["o0", "freight_ratio"])
+    assert np.isnan(out.loc["o3", "density"])
+    derived = [c for c in out.columns if c not in features_frame.columns]  # solo las columnas nuevas (las de entrada conservan su inf)
+    assert not np.isinf(out[derived].select_dtypes("number").to_numpy(dtype=float)).any()

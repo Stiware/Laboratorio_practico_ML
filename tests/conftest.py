@@ -2,6 +2,8 @@
 import sys
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -87,3 +89,73 @@ order_id,payment_sequential,payment_type,payment_installments,payment_value
 o1,1,credit_card,1,150.0
 """)
     return tmp_path
+
+
+@pytest.fixture
+def features_frame():
+    """Tabla pequeña hecha a mano con las columnas de `train.parquet` (entrada de `add_features`).
+
+    Casos (todos inventados para probar, no son datos reales):
+    - o0: lunes, SP -> RJ, todo normal.   - o1: jueves, mismo estado SP/SP, precio 0 y volumen 0.
+    - o2: domingo 2017-11-19, sin fecha prometida, estado del cliente fuera de la tabla ("XX"), todo vacío.
+    - o3: lunes 2017-11-20 (inicio de la temporada alta), AM -> AM.  - o4: domingo 2017-12-31 (último día).
+    - o5: lunes 2018-01-01 (ya fuera de la temporada).  - o6: viernes, con precio y distancia negativos.
+    - o7: sábado.
+    """
+    ts = pd.Timestamp
+    rows = [
+        # id, compra, prometida, price, freight, n_items, main_items, weight, volume, dist, miss, categoría, vendedor, est. vend., est. cliente
+        ("o0", ts("2017-03-06 10:00"), ts("2017-03-30 10:00"), 100.0, 20.0, 3, 2, 1000.0, 2000.0, 500.0, 0, "health_beauty", "s1", "SP", "RJ"),
+        ("o1", ts("2017-03-09 10:00"), ts("2017-03-20 10:00"), 0.0, 10.0, 3, 3, 500.0, 0.0, 0.0, 0, "bed_bath_table", "s2", "SP", "SP"),
+        ("o2", ts("2017-11-19 23:00"), pd.NaT, np.nan, np.nan, 1, 1, np.nan, np.nan, np.nan, 1, "desconocida", "s3", "SP", "XX"),
+        ("o3", ts("2017-11-20 00:00"), ts("2017-12-20 00:00"), 50.0, 50.0, 1, 1, 200.0, 400.0, 3000.0, 0, "computers", "s4", "AM", "AM"),
+        ("o4", ts("2017-12-31 12:00"), ts("2018-01-15 12:00"), 10.0, 5.0, 1, 1, 100.0, 100.0, 10.0, 0, "health_beauty", "s1", "SP", "SP"),
+        ("o5", ts("2018-01-01 12:00"), ts("2018-01-20 12:00"), 10.0, 5.0, 1, 1, 100.0, 100.0, 10.0, 0, "health_beauty", "s1", "SP", "SP"),
+        ("o6", ts("2017-03-10 10:00"), ts("2017-03-25 10:00"), -1.0, 5.0, 1, 1, 100.0, 100.0, -5.0, 0, "toys", "s5", "MG", "MG"),
+        ("o7", ts("2017-03-11 10:00"), ts("2017-03-26 10:00"), 30.0, 6.0, 2, 1, 300.0, 600.0, 120.0, 0, "toys", "s5", "MG", "RJ"),
+    ]
+    cols = [
+        "order_id", "order_purchase_timestamp", "order_estimated_delivery_date", "price_sum", "freight_sum",
+        "n_items", "main_seller_items", "weight_g_sum", "volume_cm3_sum", "distance_km", "missing_coords",
+        "product_category_name", "seller_id", "seller_state", "customer_state",
+    ]
+    df = pd.DataFrame(rows, columns=cols)
+    df["customer_unique_id"] = [f"u{i}" for i in range(len(df))]
+    df["dias_entrega"] = [10.0, 7.0, 12.0, 14.0, 9.0, 8.0, 6.0, 11.0]
+    return df
+
+
+@pytest.fixture
+def frame_factory():
+    """Devuelve una función que arma una tabla más grande, con las mismas columnas que `train.parquet`.
+
+    `make(n, seed)` crea `n` pedidos de fechas entre 2017-06 y 2018-04, con clientes que a veces se repiten,
+    tres vendedores, tres estados y un objetivo que depende de la distancia (para que haya algo que aprender).
+    """
+    def make(n: int = 120, seed: int = 0) -> pd.DataFrame:
+        rng = np.random.default_rng(seed)
+        purchase = pd.Timestamp("2017-06-05") + pd.to_timedelta(rng.integers(0, 330, n), unit="D")
+        n_items = rng.integers(1, 4, n)
+        distance = rng.uniform(5, 2000, n)
+        df = pd.DataFrame({
+            "order_id": [f"o{i}" for i in range(n)],
+            "customer_unique_id": [f"u{i}" for i in rng.integers(0, max(n // 2, 1), n)],
+            "order_purchase_timestamp": purchase,
+            "order_estimated_delivery_date": purchase + pd.to_timedelta(rng.integers(8, 35, n), unit="D"),
+            "price_sum": rng.uniform(10, 300, n),
+            "freight_sum": rng.uniform(5, 60, n),
+            "n_items": n_items,
+            "main_seller_items": np.minimum(n_items, rng.integers(1, 4, n)),
+            "weight_g_sum": rng.uniform(100, 5000, n),
+            "volume_cm3_sum": rng.uniform(200, 20000, n),
+            "distance_km": distance,
+            "missing_coords": 0,
+            "product_category_name": rng.choice(["health_beauty", "toys", "computers", "bed_bath_table"], n),
+            "seller_id": rng.choice(["s1", "s2", "s3"], n),
+            "seller_state": rng.choice(["SP", "RJ", "MG"], n),
+            "customer_state": rng.choice(["SP", "RJ", "MG"], n),
+        })
+        df["dias_entrega"] = 4 + distance / 150 + rng.normal(0, 1, n)
+        return df
+
+    return make

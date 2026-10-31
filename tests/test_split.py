@@ -1,10 +1,11 @@
 """Pruebas de la partición por cliente (decisión 5): sin fuga, completa y reproducible."""
+import numpy as np
 import pandas as pd
 import pytest
 from sklearn.model_selection import ShuffleSplit
 
 import olistbr.data.split as split_module
-from olistbr.data.split import assert_disjoint_groups, prepare_train_test, split_by_group
+from olistbr.data.split import assert_disjoint_groups, forward_split, make_group_folds, prepare_train_test, split_by_group
 from olistbr.features.categories import frequent_values
 
 
@@ -119,3 +120,82 @@ def test_assert_disjoint_groups_raises_on_overlap():
 def test_assert_disjoint_groups_accepts_clean_partition():
     train, test = split_by_group(_orders())
     assert_disjoint_groups(train, test)  # no debe fallar
+
+
+# ---------------------------------- Etapa 4: pliegues por cliente ----------------------------------
+
+
+def test_group_folds_do_not_share_customers():
+    """En cada pliegue ningún cliente está en el entrenamiento y en la validación a la vez."""
+    df = _orders(100, 5)
+    folds = make_group_folds(df, n_splits=5)
+    assert len(folds) == 5
+    for train_idx, valid_idx in folds:
+        assert set(df.iloc[train_idx]["customer_unique_id"]).isdisjoint(set(df.iloc[valid_idx]["customer_unique_id"]))
+
+
+def test_group_folds_cover_each_row_once():
+    """Los 5 pliegues de validación suman todas las filas, sin repetir ninguna."""
+    df = _orders(100, 5)
+    folds = make_group_folds(df, n_splits=5)
+    validation = np.concatenate([valid_idx for _, valid_idx in folds])
+    assert sorted(validation) == list(range(len(df)))
+    for train_idx, valid_idx in folds:
+        assert len(train_idx) + len(valid_idx) == len(df)
+
+
+def test_group_folds_are_reproducible():
+    df = _orders(100, 5)
+    first = make_group_folds(df, n_splits=5, seed=42)
+    second = make_group_folds(df, n_splits=5, seed=42)
+    for (train_a, valid_a), (train_b, valid_b) in zip(first, second):
+        np.testing.assert_array_equal(valid_a, valid_b)
+        np.testing.assert_array_equal(train_a, train_b)
+
+
+# ------------------------------ Etapa 4: prueba hacia adelante (por fechas) ------------------------------
+
+
+def _purchases():
+    """Compras de clientes hechos a mano alrededor de la fecha de corte 2018-02-28 / 2018-03-01."""
+    rows = [
+        ("A", "2018-01-10 10:00"),  # A compró antes y después: queda fuera del entrenamiento
+        ("A", "2018-04-10 10:00"),
+        ("B", "2017-05-02 09:00"),  # solo entrenamiento
+        ("C", "2018-05-20 09:00"),  # solo validación
+        ("D", "2018-02-28 23:30"),  # último momento del entrenamiento
+        ("E", "2018-03-01 00:00"),  # primer momento de la validación
+        ("F", "2018-09-01 10:00"),  # fuera de los dos periodos
+        ("G", "2018-08-31 22:00"),  # último día de la validación
+    ]
+    df = pd.DataFrame(rows, columns=["customer_unique_id", "order_purchase_timestamp"])
+    df["order_purchase_timestamp"] = pd.to_datetime(df["order_purchase_timestamp"])
+    df["order_id"] = [f"o{i}" for i in range(len(df))]
+    return df
+
+
+def test_forward_split_respects_dates():
+    train, valid = forward_split(_purchases())
+    assert train["order_purchase_timestamp"].max() < pd.Timestamp("2018-03-01")
+    assert valid["order_purchase_timestamp"].min() >= pd.Timestamp("2018-03-01")
+    assert valid["order_purchase_timestamp"].max() < pd.Timestamp("2018-09-01")
+    assert set(train["customer_unique_id"]) == {"B", "D"}
+    assert set(valid["customer_unique_id"]) == {"A", "C", "E", "G"}  # F (septiembre) no está en ninguno
+
+
+def test_forward_split_has_no_shared_customers():
+    """A compró en los dos periodos: su compra de enero NO queda en el entrenamiento."""
+    train, valid = forward_split(_purchases())
+    assert set(train["customer_unique_id"]).isdisjoint(set(valid["customer_unique_id"]))
+    assert "A" not in set(train["customer_unique_id"])
+    assert (valid["customer_unique_id"] == "A").sum() == 1  # su compra de abril sí está en la validación
+
+
+def test_forward_split_rejects_overlapping_dates():
+    with pytest.raises(ValueError, match="debe terminar antes"):
+        forward_split(_purchases(), train_end="2018-03-01", valid_start="2018-03-01")
+
+
+def test_forward_split_rejects_empty_validation():
+    with pytest.raises(ValueError, match="vacía"):
+        forward_split(_purchases(), valid_start="2030-01-01", valid_end="2030-02-01")

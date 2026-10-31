@@ -5,9 +5,18 @@ Si esos pedidos se reparten entre entrenamiento y prueba, el modelo "reconoce" a
 sale mejor de lo que será en producción. Por eso **todas** las particiones respetan al cliente completo.
 """
 import pandas as pd
-from sklearn.model_selection import GroupShuffleSplit
+from sklearn.model_selection import GroupKFold, GroupShuffleSplit
 
-from olistbr.config import GROUP_COL, MIN_SELLER_ITEMS, RANDOM_STATE, TEST_SIZE
+from olistbr.config import (
+    FORWARD_TRAIN_END,
+    FORWARD_VALID_END,
+    FORWARD_VALID_START,
+    GROUP_COL,
+    MIN_SELLER_ITEMS,
+    N_FOLDS,
+    RANDOM_STATE,
+    TEST_SIZE,
+)
 from olistbr.features.categories import frequent_values, group_rare_categories
 
 
@@ -64,3 +73,51 @@ def prepare_train_test(
     train = group_rare_categories(train, seller_col, frequent_sellers)
     test = group_rare_categories(test, seller_col, frequent_sellers)
     return train, test, frequent_sellers
+
+
+def make_group_folds(
+    df: pd.DataFrame,
+    n_splits: int = N_FOLDS,
+    group_col: str = GROUP_COL,
+    seed: int = RANDOM_STATE,
+) -> list:
+    """Pliegues de validación cruzada por cliente: devuelve `[(índices_entrenamiento, índices_validación), ...]`.
+
+    Se calculan UNA vez y se reutilizan en todas las comparaciones (misma validación para cada idea).
+    Ningún cliente cae en el entrenamiento y la validación del mismo pliegue; se verifica antes de devolver.
+    """
+    splitter = GroupKFold(n_splits=n_splits, shuffle=True, random_state=seed)
+    folds = [(train_idx, valid_idx) for train_idx, valid_idx in splitter.split(df, groups=df[group_col])]
+    for train_idx, valid_idx in folds:
+        assert_disjoint_groups(df.iloc[train_idx], df.iloc[valid_idx], group_col=group_col)
+    return folds
+
+
+def forward_split(
+    df: pd.DataFrame,
+    train_end: str = FORWARD_TRAIN_END,
+    valid_start: str = FORWARD_VALID_START,
+    valid_end: str = FORWARD_VALID_END,
+    group_col: str = GROUP_COL,
+    date_col: str = "order_purchase_timestamp",
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Partición «hacia adelante»: entrena con el pasado y valida con compras posteriores.
+
+    Imita el uso real (predecir lo que viene) y sirve de guardia contra la tendencia entre años. Los días
+    `train_end` y `valid_end` se incluyen completos. **El entrenamiento no incluye a los clientes que
+    aparecen en la validación**, para que ningún cliente esté en los dos lados. Solo usa la tabla que recibe
+    (el conjunto de entrenamiento); nunca la prueba final.
+    """
+    if pd.Timestamp(train_end) >= pd.Timestamp(valid_start):
+        raise ValueError(f"el entrenamiento ({train_end}) debe terminar antes de que empiece la validación ({valid_start})")
+    dates = df[date_col]
+    one_day = pd.Timedelta(days=1)
+    in_valid = (dates >= pd.Timestamp(valid_start)) & (dates < pd.Timestamp(valid_end) + one_day)
+    in_train = dates < pd.Timestamp(train_end) + one_day
+
+    valid = df[in_valid]
+    if valid.empty:
+        raise ValueError(f"no hay compras entre {valid_start} y {valid_end}: la validación hacia adelante está vacía")
+    train = df[in_train & ~df[group_col].isin(set(valid[group_col]))]
+    assert_disjoint_groups(train, valid, group_col=group_col)
+    return train.reset_index(drop=True), valid.reset_index(drop=True)
