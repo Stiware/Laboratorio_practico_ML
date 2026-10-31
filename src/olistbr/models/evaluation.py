@@ -4,12 +4,15 @@ Cada idea se compara con la referencia usando el mismo modelo, los mismos pliegu
 (error absoluto medio en días y costo medio 3 a 1). La regla de decisión escrita en
 `especificaciones/04-features.md` §2 vive aquí, en `decide_idea`, para que no dependa de leer cifras a ojo.
 """
+import time
+
 import numpy as np
 import pandas as pd
 from sklearn.base import clone
 
-from olistbr.config import MIN_IMPROVEMENT_RATIO, TARGET
-from olistbr.models.metrics import mae_days, mean_delivery_cost
+from olistbr.config import GROUP_COL, MIN_IMPROVEMENT_RATIO, MIN_WIN_SHARE, TARGET, TOURNAMENT_GROUPS
+from olistbr.models.metrics import mae_days, mean_delivery_cost, metrics_by_group
+from olistbr.models.train import build_pipeline, fit_deadline_model, regression_metrics
 
 NOISE_FLOOR = 1e-12  # con menos ruido que esto el cociente mejora / ruido no se calcula (se evita dividir por cero)
 
@@ -215,3 +218,228 @@ def results_table(rows: list) -> pd.DataFrame:
     if table["idea"].duplicated().any():
         raise ValueError(f"ideas repetidas en la tabla: {table.loc[table['idea'].duplicated(), 'idea'].tolist()}")
     return table
+
+
+# --- Etapa 5: evaluación de los candidatos del torneo --------------------------------------------------------------
+# (`evaluate_folds` y `evaluate_holdout` de la etapa 4 no cambian: siguen sirviendo para medir ideas de variables.)
+
+CANDIDATE_COLUMNS = [
+    "modelo", "familia", "pliegue", "mae", "rmse", "r2", "sesgo", "costo", "tarde", "cobertura", "margen",
+    "n_ajuste", "n_calibracion", "n_validacion", "fit_seconds",
+]
+METRIC_COLUMNS = ["mae", "rmse", "r2", "sesgo", "costo", "tarde", "cobertura", "margen"]
+
+
+def _evaluate_one(name, candidate, X_train, y_train, X_valid, y_valid, groups_col, fold) -> dict:
+    """Ajusta un candidato con un entrenamiento y mide el plazo recomendado en la validación (una fila de resultados)."""
+    pipeline = build_pipeline(TOURNAMENT_GROUPS, model=clone(candidate.model), scale=candidate.scale)
+    start = time.perf_counter()
+    model = fit_deadline_model(pipeline, candidate.family, X_train, y_train, X_train[groups_col])
+    seconds = time.perf_counter() - start
+    predicted, recommended = model.predict_with_deadline(X_valid)
+    metrics = regression_metrics(y_valid, predicted, recommended)
+    return {
+        "modelo": name, "familia": candidate.family, "pliegue": fold, **metrics, "margen": model.margin,
+        "n_ajuste": model.n_fit, "n_calibracion": model.n_calibration, "n_validacion": len(X_valid), "fit_seconds": seconds,
+    }
+
+
+def evaluate_candidate_folds(name, candidate, X: pd.DataFrame, y: pd.Series, folds: list, groups_col: str = GROUP_COL) -> pd.DataFrame:
+    """Evalúa un candidato en cada pliegue; devuelve una fila por pliegue con `CANDIDATE_COLUMNS`.
+
+    Cada pliegue ajusta con su entrenamiento (la familia A aparta clientes de calibración dentro de él) y mide en su validación.
+    El candidato que se pasa no se modifica (se clona en cada pliegue). `X` debe traer la columna de cliente (`groups_col`),
+    que sirve para agrupar la calibración y nunca entra al modelo.
+    """
+    rows = [
+        _evaluate_one(name, candidate, X.iloc[train_idx], y.iloc[train_idx], X.iloc[valid_idx], y.iloc[valid_idx], groups_col, fold)
+        for fold, (train_idx, valid_idx) in enumerate(folds)
+    ]
+    return pd.DataFrame(rows, columns=CANDIDATE_COLUMNS)
+
+
+def evaluate_candidate_holdout(name, candidate, train: pd.DataFrame, valid: pd.DataFrame, groups_col: str = GROUP_COL, target: str = TARGET) -> dict:
+    """Lo mismo con una sola partición (la prueba hacia adelante): devuelve una fila con `pliegue = "adelante"`."""
+    return _evaluate_one(
+        name, candidate, train.drop(columns=[target]), train[target], valid.drop(columns=[target]), valid[target], groups_col, "adelante"
+    )
+
+
+def tournament_summary(by_fold: pd.DataFrame, forward: pd.DataFrame) -> pd.DataFrame:
+    """Una fila por modelo: familia, media y desviación (`ddof=1`) entre pliegues de cada métrica y el resultado hacia adelante.
+
+    El tiempo de ajuste no entra: cambia de una ejecución a otra y se guarda aparte.
+    """
+    grouped = by_fold.groupby("modelo", sort=False)
+    summary = grouped.agg(familia=("familia", "first"))
+    for metric in METRIC_COLUMNS:
+        summary[f"{metric}_media"] = grouped[metric].mean()
+        summary[f"{metric}_desv"] = grouped[metric].std(ddof=1)
+    holdout = forward.set_index("modelo")
+    summary["adelante_costo"] = holdout["costo"]
+    summary["adelante_mae"] = holdout["mae"]
+    return summary.reset_index()
+
+
+# --- Etapa 5: comparación por pares, posiciones y líneas base --------------------------------------------------------
+
+
+def compare_models(best_costs, other_costs) -> dict:
+    """Compara el costo por pliegue de dos modelos (guía §2.4); `best_costs` es el del que se espera que gane.
+
+    Por pliegue, `diferencia = costo(otro) − costo(mejor)` (positiva = el mejor gana). Devuelve la diferencia media (`diferencia_media`),
+    en cuántos pliegues gana el mejor (`gana`, `n`, `texto` como «4 de 5»), el `ruido` (desviación `ddof=1` de las diferencias) y
+    `ratio` = diferencia / ruido (NaN y `evaluable=False` si no hay ruido: nunca se divide por cero).
+    `consistente` es verdadero si el mejor gana en al menos `MIN_WIN_SHARE` de los pliegues y diferencia / ruido supera 1;
+    en otro caso es un **empate práctico**.
+    """
+    difference = np.asarray(other_costs, dtype=float) - np.asarray(best_costs, dtype=float)
+    n = len(difference)
+    wins = int((difference > 0).sum())
+    noise = float(difference.std(ddof=1)) if n > 1 else 0.0
+    evaluable = noise > NOISE_FLOOR
+    ratio = float(difference.mean() / noise) if evaluable else float("nan")
+    return {
+        "diferencia_media": float(difference.mean()), "gana": wins, "n": n, "texto": f"{wins} de {n}",
+        "ruido": noise, "ratio": ratio, "evaluable": bool(evaluable),
+        "consistente": bool(evaluable and wins / n >= MIN_WIN_SHARE and ratio > MIN_IMPROVEMENT_RATIO),
+    }
+
+
+def _fold_costs(by_fold: pd.DataFrame, model: str) -> np.ndarray:
+    """Costo por pliegue de un modelo, en el orden de los pliegues."""
+    rows = by_fold[by_fold["modelo"] == model].sort_values("pliegue")
+    if rows.empty:
+        raise KeyError(f"no hay resultados del modelo {model!r} en la tabla por pliegue")
+    return rows["costo"].to_numpy(dtype=float)
+
+
+# Dirección de cada métrica al ordenar: "min" menor es mejor, "max" mayor es mejor, "abs" lo más cercano a cero.
+RANK_DIRECTION = {"costo": "min", "mae": "min", "rmse": "min", "r2": "max", "sesgo": "abs", "tarde": "min", "margen": "min"}
+
+
+def rank_table(summary: pd.DataFrame, metrics: list) -> pd.DataFrame:
+    """Posiciones (1 = mejor) de cada modelo por métrica, a partir de las medias del resumen.
+
+    Devuelve `modelo` y una columna `posicion_<métrica>` por cada métrica pedida. Sirve para ver si el ranking por costo
+    coincide con el de exactitud (entre familias distintas no tienen por qué coincidir).
+    """
+    ranks = pd.DataFrame({"modelo": summary["modelo"].to_numpy()})
+    for metric in metrics:
+        values = summary[f"{metric}_media"].reset_index(drop=True)
+        direction = RANK_DIRECTION[metric]
+        key = values.abs() if direction == "abs" else (-values if direction == "max" else values)
+        ranks[f"posicion_{metric}"] = key.rank(method="min").astype(int).to_numpy()
+    return ranks
+
+
+def beats_baselines(by_fold: pd.DataFrame, model: str, baselines: list) -> dict:
+    """Para cada línea base, si el modelo la supera en costo por más que su ruido.
+
+    Devuelve `{línea_base: {..., "supera": bool}}` con el resultado de `compare_models(modelo, línea_base)`:
+    supera si la diferencia media es positiva y diferencia / ruido es mayor que 1.
+    """
+    model_costs = _fold_costs(by_fold, model)
+    result = {}
+    for baseline in baselines:
+        comparison = compare_models(model_costs, _fold_costs(by_fold, baseline))
+        comparison["supera"] = bool(comparison["evaluable"] and comparison["diferencia_media"] > 0 and comparison["ratio"] > MIN_IMPROVEMENT_RATIO)
+        result[baseline] = comparison
+    return result
+
+
+def practical_ties(by_fold: pd.DataFrame, best: str) -> list:
+    """Modelos que no se distinguen del mejor (el mejor no los supera de forma consistente). Ante un empate gana el más simple y rápido."""
+    best_costs = _fold_costs(by_fold, best)
+    ties = []
+    for model in by_fold["modelo"].unique():
+        if model != best and not compare_models(best_costs, _fold_costs(by_fold, model))["consistente"]:
+            ties.append(str(model))
+    return ties
+
+
+def per_thousand(difference_per_order):
+    """Pasa una diferencia por pedido a la diferencia por cada 1.000 pedidos (sin asignarle ningún valor en dinero)."""
+    return np.asarray(difference_per_order, dtype=float)[()] * 1000
+
+
+def tournament_table(by_fold: pd.DataFrame, forward: pd.DataFrame, baselines: dict, rank_metrics=("costo", "mae", "rmse", "r2", "sesgo")) -> pd.DataFrame:
+    """La tabla final del torneo: una fila por modelo, ordenada por costo 3 a 1 (de menor a mayor).
+
+    Trae el resumen (media ± desviación y partición hacia adelante), las posiciones por métrica, si supera a cada línea base
+    (`supera_<clave>`), si es el `mejor` (el de menor costo **entre los modelos**, sin contar las líneas base), cómo le va contra
+    el mejor (`gana_vs_mejor`, `ratio_vs_mejor`, `consistente_vs_mejor`) y si es un `empate_con_el_mejor`.
+    `baselines` es `{clave: nombre}`, por ejemplo `{"mediana": "Línea base: siempre la mediana", ...}`.
+    """
+    summary = tournament_summary(by_fold, forward)
+    table = summary.merge(rank_table(summary, list(rank_metrics)), on="modelo")
+    baseline_names = set(baselines.values())
+    models = table[~table["modelo"].isin(baseline_names)]
+    best = str(models.sort_values("costo_media").iloc[0]["modelo"])
+    best_costs = _fold_costs(by_fold, best)
+    ties = set(practical_ties(by_fold, best))
+
+    table["mejor"] = table["modelo"] == best
+    for key, baseline in baselines.items():
+        table[f"supera_{key}"] = [
+            False if name in baseline_names else beats_baselines(by_fold, name, [baseline])[baseline]["supera"] for name in table["modelo"]
+        ]
+    wins, ratios, consistent = [], [], []
+    for name in table["modelo"]:
+        if name == best:
+            wins.append("—"), ratios.append(float("nan")), consistent.append(False)
+            continue
+        comparison = compare_models(best_costs, _fold_costs(by_fold, name))
+        wins.append(comparison["texto"]), ratios.append(comparison["ratio"]), consistent.append(comparison["consistente"])
+    table["gana_vs_mejor"], table["ratio_vs_mejor"], table["consistente_vs_mejor"] = wins, ratios, consistent
+    table["empate_con_el_mejor"] = table["modelo"].isin(ties)
+    return table.sort_values("costo_media").reset_index(drop=True)
+
+
+def regional_metrics(
+    name, candidate, X: pd.DataFrame, y: pd.Series, folds: list, groups_col: str = GROUP_COL, region_col: str = "customer_region"
+) -> pd.DataFrame:
+    """MAE y porcentaje tarde por región del cliente, con predicciones fuera de muestra (cada pedido se predice una vez).
+
+    Para cada pliegue ajusta con su entrenamiento y predice su validación; junta todo y agrupa por región con `metrics_by_group`.
+    Sirve para ver dónde rinde peor un finalista (principio VIII). Columnas: `modelo`, `grupo`, `n_pedidos`, `mae`, `tarde`.
+    """
+    if region_col not in X.columns:
+        raise ValueError(f"`X` no trae la columna de región {region_col!r}: aplicar `add_features` antes")
+    real, predicted, recommended, regions = [], [], [], []
+    for train_idx, valid_idx in folds:
+        pipeline = build_pipeline(TOURNAMENT_GROUPS, model=clone(candidate.model), scale=candidate.scale)
+        model = fit_deadline_model(pipeline, candidate.family, X.iloc[train_idx], y.iloc[train_idx], X.iloc[train_idx][groups_col])
+        valid = X.iloc[valid_idx]
+        prediction, deadline = model.predict_with_deadline(valid)
+        real.append(y.iloc[valid_idx].to_numpy()), predicted.append(prediction), recommended.append(deadline)
+        regions.append(valid[region_col].to_numpy(dtype=object))
+    table = metrics_by_group(np.concatenate(real), np.concatenate(predicted), np.concatenate(recommended), np.concatenate(regions))
+    table.insert(0, "modelo", name)
+    return table
+
+
+def coverage_by_month(
+    name, candidate, train: pd.DataFrame, valid: pd.DataFrame, groups_col: str = GROUP_COL, target: str = TARGET,
+    date_col: str = "order_purchase_timestamp",
+) -> pd.DataFrame:
+    """Cobertura del plazo recomendado, mes a mes de compra, en una partición (p. ej. la prueba hacia adelante).
+
+    Ajusta con `train` y mide en `valid`. Sirve para ver si la calibración se mantiene en el tiempo: un plazo aprendido del pasado
+    puede quedar corto en unos meses y largo en otros cuando cambia el ritmo de entrega. Columnas: `modelo`, `mes`, `n_pedidos`,
+    `cobertura` (proporción con `real <= recomendado`), `mediana_dias` y `p75_dias` (de los días reales de ese mes).
+    """
+    pipeline = build_pipeline(TOURNAMENT_GROUPS, model=clone(candidate.model), scale=candidate.scale)
+    X_train = train.drop(columns=[target])
+    model = fit_deadline_model(pipeline, candidate.family, X_train, train[target], X_train[groups_col])
+    _, recommended = model.predict_with_deadline(valid.drop(columns=[target]))
+    frame = pd.DataFrame({
+        "mes": valid[date_col].dt.to_period("M").astype(str).to_numpy(),
+        "real": valid[target].to_numpy(dtype=float),
+        "cubierto": (valid[target].to_numpy(dtype=float) <= recommended).astype(float),
+    })
+    monthly = frame.groupby("mes").agg(
+        n_pedidos=("real", "size"), cobertura=("cubierto", "mean"), mediana_dias=("real", "median"), p75_dias=("real", lambda s: s.quantile(0.75))
+    ).reset_index()
+    monthly.insert(0, "modelo", name)
+    return monthly

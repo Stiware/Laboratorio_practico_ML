@@ -6,8 +6,9 @@ el costo medio es exactamente el MAE. Estas funciones se usan en el caso de nego
 optimización y la validación, para que todas midan lo mismo.
 """
 import numpy as np
+import pandas as pd
 
-from olistbr.config import COST_OVERESTIMATE, COST_UNDERESTIMATE
+from olistbr.config import COST_OVERESTIMATE, COST_UNDERESTIMATE, TARGET_QUANTILE
 
 
 def delivery_cost(real, predicted, under_cost: float = COST_UNDERESTIMATE, over_cost: float = COST_OVERESTIMATE):
@@ -39,3 +40,45 @@ def best_fixed_deadline(real, ratio: float = COST_UNDERESTIMATE / COST_OVERESTIM
     Es la referencia a vencer: prometer siempre el mismo plazo a todos los pedidos.
     """
     return float(np.percentile(np.asarray(real, dtype=float), ratio / (ratio + 1) * 100))
+
+
+# --- Etapa 5: métricas del plazo recomendado ------------------------------------------------------------------------
+
+
+def bias(real, predicted) -> float:
+    """Sesgo medio: promedio de `real - predicho`. Positivo si el modelo subestima, negativo si sobrestima."""
+    return float(np.mean(np.asarray(real, dtype=float) - np.asarray(predicted, dtype=float)))
+
+
+def share_late(real, recommended) -> float:
+    """Proporción de pedidos que llegan después del plazo recomendado (`real > recomendado`)."""
+    return float(np.mean(np.asarray(real, dtype=float) > np.asarray(recommended, dtype=float)))
+
+
+def coverage(real, recommended) -> float:
+    """Cobertura: proporción de pedidos que llegan a tiempo (complemento de `share_late`). Con el percentil 75 se espera ≈ 0,75."""
+    return 1.0 - share_late(real, recommended)
+
+
+def pinball_loss(real, predicted, quantile: float = TARGET_QUANTILE) -> float:
+    """Pérdida cuantílica media. Con `quantile=0,75`, el costo 3 a 1 es exactamente 4 veces esta pérdida.
+
+    Por eso el plazo que minimiza el costo 3 a 1 es el percentil 75 de lo que podría tardar el pedido.
+    """
+    error = np.asarray(real, dtype=float) - np.asarray(predicted, dtype=float)
+    return float(np.where(error > 0, quantile * error, (quantile - 1) * error).mean())
+
+
+def metrics_by_group(real, predicted, recommended, groups) -> pd.DataFrame:
+    """MAE y porcentaje tarde por grupo (p. ej. región del cliente), con el número de pedidos.
+
+    Un grupo vacío no se descarta: queda en una fila aparte llamada «(sin dato)». Columnas: `grupo`, `n_pedidos`, `mae`, `tarde`.
+    """
+    real, predicted, recommended = (np.asarray(x, dtype=float) for x in (real, predicted, recommended))
+    table = pd.DataFrame({
+        "grupo": pd.Series(np.asarray(groups, dtype=object)).fillna("(sin dato)").to_numpy(),
+        "abs_error": np.abs(real - predicted),
+        "late": (real > recommended).astype(float),
+    })
+    grouped = table.groupby("grupo", sort=True).agg(n_pedidos=("abs_error", "size"), mae=("abs_error", "mean"), tarde=("late", "mean"))
+    return grouped.reset_index()

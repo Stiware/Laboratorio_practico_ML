@@ -159,3 +159,22 @@ def frame_factory():
         return df
 
     return make
+
+
+@pytest.fixture
+def quantile_frame(frame_factory):
+    """Devuelve una función `make(n, seed)` que arma una tabla sintética con ruido ASIMÉTRICO.
+
+    El objetivo es `4 + distancia / 200 + ruido gamma` (cola larga a la derecha), así que el percentil 75 de los
+    días queda claramente por encima de la mediana: sirve para comprobar que el plazo recomendado cubre cerca
+    del 75 % de los pedidos. Incluye las variables derivadas de `add_features`.
+    """
+    from olistbr.features.engineering import add_features
+
+    def make(n: int = 600, seed: int = 0) -> pd.DataFrame:
+        df = frame_factory(n, seed)
+        rng = np.random.default_rng(seed + 1000)
+        df["dias_entrega"] = 4 + df["distance_km"] / 200 + rng.gamma(shape=2.0, scale=2.0, size=n)
+        return add_features(df)
+
+    return make

@@ -59,3 +59,19 @@ MIN_CATEGORY_FREQUENCY = 0.01
 
 # Una idea se conserva solo si mejora / ruido supera este valor (regla de decisión escrita).
 MIN_IMPROVEMENT_RATIO = 1.0
+
+# --- Etapa 5: torneo de modelos (especificaciones/05-torneo.md) ----------------------------------
+# Grupos de variables del torneo: los conservados en la etapa 4 SIN la marca de fin de año (peak_season),
+# que descansa en una sola temporada, y sin el historial (history), que se descartó. Nunca el plazo prometido.
+TOURNAMENT_GROUPS = (
+    "logs", "same_state", "regions", "calendar", "distance_interaction", "ratios", "multi_seller",
+)
+
+# Con subestimar 3 veces más caro que sobrestimar, el plazo que minimiza el costo es el percentil 3 / (3 + 1).
+TARGET_QUANTILE = COST_UNDERESTIMATE / (COST_UNDERESTIMATE + COST_OVERESTIMATE)  # 0,75
+
+# Proporción de clientes que se aparta dentro de cada entrenamiento para calcular el margen del plazo.
+CALIBRATION_SIZE = 0.2
+
+# Un modelo gana "de forma consistente" si gana en al menos esta fracción de los pliegues (4 de 5).
+MIN_WIN_SHARE = 0.8

@@ -1,4 +1,4 @@
-"""Pruebas de la medición de ideas: pliegues, mejora/ruido y regla de decisión (especificaciones/04-features.md §2)."""
+"""Pruebas de la medición de ideas (etapa 4) y de la evaluación del torneo de modelos (etapa 5)."""
 import numpy as np
 import pandas as pd
 import pytest
@@ -21,8 +21,12 @@ from olistbr.models.evaluation import (
     reference_row,
     results_table,
 )
-from olistbr.models.train import build_baseline_pipeline, build_pipeline
+import olistbr.models.evaluation as ev
+from olistbr.models.train import build_baseline_pipeline, build_pipeline, candidates
 from olistbr.models.metrics import mae_days, mean_delivery_cost
+
+# Las tablas pequeñas de estas pruebas tienen pocos clientes de calibración: el aviso es esperado y se prueba en test_models.py.
+pytestmark = pytest.mark.filterwarnings("ignore:solo .* clientes de calibración:UserWarning")
 
 
 def _mean_model():
@@ -231,3 +235,272 @@ def test_kept_groups_and_results_table():
 def test_decide_wording_does_not_claim_a_tiny_gain_is_maintained():
     decision, reason = decide_idea(_cv(1.02, gain=0.0004, cost_gain=0.001), {"mae_gain": 0.0009}, known_at_prediction=True)
     assert decision == "conservar" and "no empeora" in reason and "0,0009" in reason
+
+
+# ====================== Etapa 5: evaluación de los candidatos del torneo ======================
+
+CANDIDATE_COLUMNS = [
+    "modelo", "familia", "pliegue", "mae", "rmse", "r2", "sesgo", "costo", "tarde", "cobertura", "margen",
+    "n_ajuste", "n_calibracion", "n_validacion", "fit_seconds",
+]
+
+
+def _tournament_data(quantile_frame, n=500, seed=21):
+    df = quantile_frame(n, seed)
+    X, y = df.drop(columns=["dias_entrega"]), df["dias_entrega"]
+    return df, X, y
+
+
+def test_evaluate_candidate_folds_returns_all_columns(quantile_frame):
+    df, X, y = _tournament_data(quantile_frame)
+    folds = make_group_folds(df, n_splits=5)
+    ridge = candidates()["Ridge"]
+    result = ev.evaluate_candidate_folds("Ridge", ridge, X, y, folds)
+    assert list(result.columns) == CANDIDATE_COLUMNS
+    assert list(result["pliegue"]) == [0, 1, 2, 3, 4] and set(result["modelo"]) == {"Ridge"} and set(result["familia"]) == {"A"}
+    assert (result["n_calibracion"] > 0).all()  # la familia A aparta clientes de calibración
+    assert (result["n_ajuste"] + result["n_calibracion"]).tolist() == [len(tr) for tr, _ in folds]
+    assert (result["fit_seconds"] > 0).all() and np.isfinite(result[["mae", "rmse", "costo", "cobertura", "margen"]].to_numpy()).all()
+    # la familia B y las líneas base ajustan con todo el entrenamiento y no llevan margen
+    base = ev.evaluate_candidate_folds("mediana", candidates()["Línea base: siempre la mediana"], X, y, folds)
+    assert (base["n_calibracion"] == 0).all() and (base["margen"] == 0).all()
+
+
+def test_evaluate_candidate_folds_is_reproducible_and_does_not_touch_the_candidate(quantile_frame):
+    """Dos evaluaciones iguales dan las mismas métricas (el tiempo cambia), y el candidato que se pasa queda sin ajustar."""
+    from sklearn.exceptions import NotFittedError
+    from sklearn.utils.validation import check_is_fitted
+
+    df, X, y = _tournament_data(quantile_frame)
+    folds = make_group_folds(df, n_splits=5)
+    candidate = candidates()["LightGBM"]
+    first = ev.evaluate_candidate_folds("lgbm", candidate, X, y, folds)
+    second = ev.evaluate_candidate_folds("lgbm", candidate, X, y, folds)
+    pd.testing.assert_frame_equal(first.drop(columns="fit_seconds"), second.drop(columns="fit_seconds"))
+    with pytest.raises(NotFittedError):
+        check_is_fitted(candidate.model)  # se clona en cada pliegue
+
+
+def test_family_b_goes_through_evaluate_candidate_folds_without_margin(quantile_frame):
+    df, X, y = _tournament_data(quantile_frame)
+    folds = make_group_folds(df, n_splits=5)
+    result = ev.evaluate_candidate_folds("hgb-q", candidates()["HistGradientBoosting cuantil 0,75"], X, y, folds)
+    assert (result["familia"] == "B").all() and (result["margen"] == 0).all() and (result["n_calibracion"] == 0).all()
+    assert (result["n_ajuste"] == [len(tr) for tr, _ in folds]).all()  # ajusta con todo el entrenamiento del pliegue
+
+
+def test_evaluate_candidate_holdout_fits_only_on_train(quantile_frame):
+    """La línea base de la mediana predice la mediana del ENTRENAMIENTO (no la de la validación)."""
+    df, X, y = _tournament_data(quantile_frame, n=800)
+    train, valid = forward_split(df)
+    row = ev.evaluate_candidate_holdout("mediana", candidates()["Línea base: siempre la mediana"], train, valid)
+    assert row["pliegue"] == "adelante" and set(CANDIDATE_COLUMNS) <= set(row)
+    expected_bias = valid["dias_entrega"].mean() - train["dias_entrega"].median()
+    assert row["sesgo"] == pytest.approx(expected_bias)
+    assert row["n_validacion"] == len(valid) and row["n_ajuste"] == len(train) and row["margen"] == 0.0
+
+
+def _by_fold(models, rng):
+    rows = []
+    for name, family, offset in models:
+        for fold in range(5):
+            rows.append({"modelo": name, "familia": family, "pliegue": fold, "mae": 5 + offset + fold * 0.01, "rmse": 7.0 + offset,
+                         "r2": 0.3, "sesgo": 0.1, "costo": 10 + offset + fold * 0.02, "tarde": 0.25, "cobertura": 0.75,
+                         "margen": 1.0, "n_ajuste": 80, "n_calibracion": 20, "n_validacion": 25, "fit_seconds": 1.0 + fold})
+    return pd.DataFrame(rows)
+
+
+def test_tournament_summary_means_and_std():
+    by_fold = _by_fold([("M1", "A", 0.0), ("M2", "B", 1.0)], None)
+    forward = pd.DataFrame([{"modelo": "M1", "costo": 9.5, "mae": 4.8}, {"modelo": "M2", "costo": 11.2, "mae": 6.1}])
+    summary = ev.tournament_summary(by_fold, forward).set_index("modelo")
+    assert list(summary.index) == ["M1", "M2"] and summary.loc["M2", "familia"] == "B"
+    costs = [10 + k * 0.02 for k in range(5)]
+    assert summary.loc["M1", "costo_media"] == pytest.approx(np.mean(costs))
+    assert summary.loc["M1", "costo_desv"] == pytest.approx(np.std(costs, ddof=1))
+    assert summary.loc["M2", "adelante_costo"] == 11.2 and summary.loc["M1", "adelante_mae"] == 4.8
+    assert not any("fit_seconds" in c for c in summary.columns)  # el tiempo no entra al resumen
+
+
+# ================== Etapa 5: comparación por pares, posiciones y líneas base ==================
+
+
+def test_compare_models_counts_wins():
+    """Diferencias de costo [0,5; 0,6; 0,4; 0,5; 0,7] a favor del mejor: gana 5 de 5 y es consistente."""
+    best = np.array([10.0, 10.0, 10.0, 10.0, 10.0])
+    other = best + np.array([0.5, 0.6, 0.4, 0.5, 0.7])
+    result = ev.compare_models(best, other)
+    diffs = np.array([0.5, 0.6, 0.4, 0.5, 0.7])
+    assert result["diferencia_media"] == pytest.approx(diffs.mean())
+    assert result["gana"] == 5 and result["n"] == 5 and result["texto"] == "5 de 5"
+    assert result["ruido"] == pytest.approx(diffs.std(ddof=1))
+    assert result["ratio"] == pytest.approx(diffs.mean() / diffs.std(ddof=1)) and result["ratio"] > 1
+    assert result["evaluable"] and result["consistente"]
+
+
+def test_compare_models_zero_noise_is_not_evaluable():
+    best = np.array([10.0, 11.0, 12.0])
+    result = ev.compare_models(best, best + 0.5)  # la diferencia es idéntica en todos los pliegues
+    assert result["diferencia_media"] == pytest.approx(0.5) and result["ruido"] == pytest.approx(0.0)
+    assert np.isnan(result["ratio"]) and not result["evaluable"] and not result["consistente"]
+
+
+def test_compare_models_consistent_vs_practical_tie():
+    """Gana 3 de 5 y el cociente es menor que 1: es un empate práctico, no una ventaja."""
+    best = np.full(5, 10.0)
+    result = ev.compare_models(best, best + np.array([0.5, -0.4, 0.3, -0.2, 0.1]))
+    assert result["gana"] == 3 and result["texto"] == "3 de 5"
+    assert result["ratio"] < 1 and not result["consistente"]
+    # ganar en 4 de 5 con cociente mayor que 1 sí es consistente
+    ok = ev.compare_models(best, best + np.array([0.9, 1.0, 1.1, 1.0, -0.1]))
+    assert ok["gana"] == 4 and ok["ratio"] > 1 and ok["consistente"]
+    # ganar en 3 de 5 NO alcanza aunque el cociente sea grande
+    three = ev.compare_models(best, best + np.array([1.0, 1.1, 0.9, -0.01, -0.02]))
+    assert three["gana"] == 3 and not three["consistente"]
+
+
+def test_rank_table_orders_by_metric():
+    summary = pd.DataFrame({
+        "modelo": ["A", "B", "C"],
+        "costo_media": [10.0, 9.0, 11.0],
+        "r2_media": [0.1, 0.3, 0.2],       # en R² mayor es mejor
+        "sesgo_media": [0.5, -0.1, 0.3],   # en el sesgo importa la distancia a cero
+    })
+    ranks = ev.rank_table(summary, ["costo", "r2", "sesgo"]).set_index("modelo")
+    assert ranks["posicion_costo"].tolist() == [2, 1, 3]
+    assert ranks["posicion_r2"].tolist() == [3, 1, 2]
+    assert ranks["posicion_sesgo"].tolist() == [3, 1, 2]
+
+
+def _folds_table(costs_by_model):
+    rows = [{"modelo": name, "pliegue": fold, "costo": cost} for name, costs in costs_by_model.items() for fold, cost in enumerate(costs)]
+    return pd.DataFrame(rows)
+
+
+def test_beats_baselines_requires_more_than_noise():
+    by_fold = _folds_table({
+        "bueno": [8.0, 8.1, 7.9, 8.0, 8.2],
+        "dudoso": [9.9, 10.1, 9.7, 10.3, 10.0],
+        "mediana": [10.0, 10.0, 10.0, 10.0, 10.0],
+        "plazo fijo": [9.0, 9.0, 9.0, 9.0, 9.0],
+    })
+    good = ev.beats_baselines(by_fold, "bueno", ["mediana", "plazo fijo"])
+    assert good["mediana"]["supera"] and good["plazo fijo"]["supera"]
+    doubtful = ev.beats_baselines(by_fold, "dudoso", ["mediana", "plazo fijo"])
+    assert not doubtful["mediana"]["supera"]      # la diferencia (≈ 0) no supera su ruido
+    assert not doubtful["plazo fijo"]["supera"]   # es peor que el plazo fijo
+
+
+def test_practical_ties_lists_indistinguishable_models():
+    base = np.array([10.0, 10.2, 9.8, 10.1, 9.9])
+    by_fold = _folds_table({
+        "mejor": base,
+        "casi igual": base + np.array([0.3, -0.3, 0.2, -0.2, 0.0]),
+        "claramente peor": base + np.array([2.0, 2.1, 1.9, 2.0, 2.2]),
+    })
+    assert ev.practical_ties(by_fold, "mejor") == ["casi igual"]
+
+
+def test_per_thousand():
+    assert ev.per_thousand(0.0123) == pytest.approx(12.3)
+    assert ev.per_thousand(np.array([0.001, 0.002])).tolist() == pytest.approx([1.0, 2.0])
+
+
+# ============ Etapa 5: tabla final del torneo y métricas por región (funciones que arman el notebook) ============
+
+BASELINES = {"mediana": "Línea base: siempre la mediana", "plazo_fijo": "Línea base: plazo fijo (percentil 75)"}
+
+
+def _tournament_inputs():
+    costs = {
+        "Línea base: siempre la mediana": [14.0, 14.3, 13.8, 14.2, 13.9],
+        "Línea base: plazo fijo (percentil 75)": [12.0, 12.3, 11.9, 12.1, 11.9],
+        "Modelo bueno": [10.0, 10.1, 9.9, 10.2, 9.8],
+        "Modelo parecido": [10.05, 10.0, 10.0, 10.25, 9.8],  # costo medio 10,02: apenas peor que el bueno (10,00)
+        "Modelo malo": [13.0, 13.2, 12.9, 13.1, 13.0],
+    }
+    rows = []
+    for name, series in costs.items():
+        family = "base" if name.startswith("Línea base") else "A"
+        for fold, cost in enumerate(series):
+            rows.append({"modelo": name, "familia": family, "pliegue": fold, "mae": 5 + cost / 10, "rmse": 7 + cost / 10, "r2": 0.5 - cost / 100,
+                         "sesgo": 0.1, "costo": cost, "tarde": 0.25, "cobertura": 0.75, "margen": 1.0, "n_ajuste": 80,
+                         "n_calibracion": 20, "n_validacion": 25, "fit_seconds": 1.0})
+    by_fold = pd.DataFrame(rows)
+    forward = pd.DataFrame([{"modelo": name, "costo": float(np.mean(series)), "mae": 5 + float(np.mean(series)) / 10} for name, series in costs.items()])
+    return by_fold, forward
+
+
+def test_tournament_table_has_everything_the_report_needs():
+    by_fold, forward = _tournament_inputs()
+    table = ev.tournament_table(by_fold, forward, BASELINES).set_index("modelo")
+    assert table.index[0] == "Modelo bueno"  # ordenada por costo, de menor a mayor
+    assert bool(table.loc["Modelo bueno", "mejor"]) and not table["mejor"].drop("Modelo bueno").any()
+    assert table.loc["Modelo bueno", "posicion_costo"] == 1 and table.loc["Modelo malo", "posicion_costo"] == 4
+    # supera las dos líneas base el modelo bueno; el malo supera a la mediana pero no al plazo fijo
+    assert table.loc["Modelo bueno", "supera_mediana"] and table.loc["Modelo bueno", "supera_plazo_fijo"]
+    assert table.loc["Modelo malo", "supera_mediana"] and not table.loc["Modelo malo", "supera_plazo_fijo"]
+    # el parecido es un empate práctico con el mejor; el malo no
+    assert table.loc["Modelo parecido", "empate_con_el_mejor"] and not table.loc["Modelo malo", "empate_con_el_mejor"]
+    assert table.loc["Modelo malo", "gana_vs_mejor"] == "5 de 5" and table.loc["Modelo malo", "consistente_vs_mejor"]
+    assert "fit_seconds" not in " ".join(table.columns)
+
+
+def test_unknown_model_raises_instead_of_returning_nan():
+    by_fold, _ = _tournament_inputs()
+    with pytest.raises(KeyError, match="no hay resultados"):
+        ev.beats_baselines(by_fold, "Modelo que no existe", ["Línea base: siempre la mediana"])
+
+
+def test_tournament_table_best_ignores_baselines():
+    """Si una línea base tuviera el menor costo, el «mejor» sigue siendo el mejor modelo (y se ve que no lo supera)."""
+    by_fold, forward = _tournament_inputs()
+    by_fold.loc[by_fold["modelo"] == "Línea base: plazo fijo (percentil 75)", "costo"] = 5.0
+    table = ev.tournament_table(by_fold, forward, BASELINES).set_index("modelo")
+    assert bool(table.loc["Modelo bueno", "mejor"])
+    assert not table.loc["Modelo bueno", "supera_plazo_fijo"]
+
+
+def test_regional_metrics_splits_out_of_fold_predictions_by_region(quantile_frame):
+    df = quantile_frame(500, seed=33)
+    X, y = df.drop(columns=["dias_entrega"]), df["dias_entrega"]
+    folds = make_group_folds(df, n_splits=5)
+    table = ev.regional_metrics("Ridge", candidates()["Ridge"], X, y, folds)
+    assert list(table.columns) == ["modelo", "grupo", "n_pedidos", "mae", "tarde"]
+    assert set(table["modelo"]) == {"Ridge"} and table["n_pedidos"].sum() == len(X)  # cada pedido se predice una vez, fuera de muestra
+    assert set(table["grupo"]) <= set(X["customer_region"].dropna()) | {"(sin dato)"}
+    assert table["tarde"].between(0, 1).all() and (table["mae"] >= 0).all()
+
+
+def test_regional_metrics_are_really_out_of_sample(quantile_frame):
+    """Un árbol sin límite memoriza lo que ve: si las predicciones no fueran fuera de muestra, su MAE sería casi 0."""
+    from sklearn.tree import DecisionTreeRegressor
+
+    from olistbr.models.train import Candidate
+
+    df = quantile_frame(600, seed=34)
+    X, y = df.drop(columns=["dias_entrega"]), df["dias_entrega"]
+    folds = make_group_folds(df, n_splits=5)
+    memorizer = Candidate(DecisionTreeRegressor(random_state=0), "B", False)
+    table = ev.regional_metrics("árbol", memorizer, X, y, folds)
+    assert (table["mae"] > 1.0).all(), table  # con fuga saldría ≈ 0
+
+
+def test_regional_metrics_requires_the_region_column(quantile_frame):
+    df = quantile_frame(300, seed=35)
+    X, y = df.drop(columns=["dias_entrega", "customer_region"]), df["dias_entrega"]
+    with pytest.raises(ValueError, match="región"):
+        ev.regional_metrics("Ridge", candidates()["Ridge"], X, y, make_group_folds(df, n_splits=5))
+
+
+def test_coverage_by_month_reports_one_row_per_month(quantile_frame):
+    df = quantile_frame(900, seed=36)
+    train, valid = forward_split(df)
+    table = ev.coverage_by_month("Ridge", candidates()["Línea base: plazo fijo (percentil 75)"], train, valid)
+    assert list(table.columns) == ["modelo", "mes", "n_pedidos", "cobertura", "mediana_dias", "p75_dias"]
+    assert table["n_pedidos"].sum() == len(valid) and table["mes"].is_monotonic_increasing
+    assert table["cobertura"].between(0, 1).all()
+    # el plazo fijo es el percentil 75 del entrenamiento: la cobertura de cada mes se puede recalcular a mano
+    cut = train["dias_entrega"].quantile(0.75)
+    first_month = valid[valid["order_purchase_timestamp"].dt.to_period("M").astype(str) == table.loc[0, "mes"]]
+    assert table.loc[0, "cobertura"] == pytest.approx((first_month["dias_entrega"] <= cut).mean())
