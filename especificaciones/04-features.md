@@ -63,7 +63,7 @@ Las ideas descartadas se anotan **con su cifra** en `reports/04_features.md`: de
 ## 3. Validación común
 
 - **Datos:** `data/processed/train.parquet` (el `test.parquet` **no se abre**).
-- **Pliegues:** `GroupKFold(n_splits=5)` por `customer_unique_id` (regresión: no admite mezcla aleatoria), calculados **una sola vez** y guardados en una lista; `assert` de que ningún cliente cae en los dos lados de un pliegue.
+- **Pliegues:** `GroupKFold(n_splits=5, shuffle=True, random_state=42)` por `customer_unique_id` (la versión instalada de scikit-learn, 1.9.1, admite mezcla con semilla y es reproducible; la guía del curso decía que no), calculados **una sola vez** y guardados en una lista; `assert` de que ningún cliente cae en los dos lados de un pliegue.
 - **Prueba hacia adelante (guardia contra la tendencia):** dentro de `train.parquet`, entrenar con compras hasta 2018-02-28 y validar con 2018-03-01 a 2018-08-31 (con los clientes de la validación fuera del entrenamiento). Imita el uso real (predecir lo que viene). No usa `test.parquet`.
 - **Métrica principal:** MAE en días. **Control:** costo medio 3 a 1 (`olistbr.models.metrics.mean_delivery_cost`).
 - **Referencia:** variables base de la sección 4.1 con el modelo de Q4.
@@ -118,19 +118,21 @@ Todas se calculan con columnas que ya tenemos. «Aprende» = depende de los dato
 
 ## 6. Pruebas que deben existir (`tests/test_features.py`)
 
-- ☐ Una prueba por variable de la sección 4.2 con un caso normal y uno sucio hecho a mano.
-- ☐ División por cero y vacíos dan vacío, nunca `inf`.
-- ☐ `add_features` no modifica el DataFrame de entrada.
-- ☐ El preprocesador maneja una categoría que no vio en entrenamiento y no deja vacíos.
-- ☐ F8: una prueba de que el valor de un cliente del pliegue de validación **no** usa su propio objetivo.
-- ☐ Los pliegues no comparten clientes (`assert` en el notebook y prueba en `tests/`).
+- ☒ Una prueba por variable de la sección 4.2 con un caso normal y uno sucio hecho a mano.
+- ☒ División por cero y vacíos (también infinitos de entrada) dan vacío, nunca `inf`.
+- ☒ `add_features` no modifica el DataFrame de entrada.
+- ☒ El preprocesador maneja una categoría que no vio en entrenamiento y no deja vacíos.
+- ☒ F8: una prueba de que el valor de un cliente del pliegue de validación **no** usa su propio objetivo.
+- ☒ Los pliegues no comparten clientes (`assert` en el notebook y prueba en `tests/`).
 
 ## 7. Criterios de cierre
 
 - ☒ Q1 a Q4 respondidas por escrito y confirmadas por el grupo.
-- ☐ `notebooks/04_features.ipynb` corre de principio a fin y solo orquesta (la lógica está en `src/`).
-- ☐ Tabla de ideas medidas en `reports/04_features.md`: decisión, **cifra** (media, desviación y `mejora / ruido`) y motivo, también para las descartadas.
-- ☐ `pytest tests` en verde.
-- ☐ El conjunto de prueba no se abrió.
-- ☐ Todo lo que aprende de los datos está dentro del `Pipeline`.
-- ☐ Revisión con `auditor-de-fuga` y `revisor-de-codigo-ia`.
+- ☒ `notebooks/04_features.ipynb` corre de principio a fin y solo orquesta (la lógica está en `src/`).
+- ☒ Tabla de ideas medidas en `reports/04_features.md`: decisión, **cifra** (media, desviación y `mejora / ruido`) y motivo, también para las descartadas.
+- ☒ `pytest tests` en verde (119 pruebas, 2026-10-31).
+- ☒ El conjunto de prueba no se abrió (`grep` de `test.parquet` da 0 en el notebook y los módulos de la etapa).
+- ☒ Todo lo que aprende de los datos está dentro del `Pipeline`.
+- ☒ Revisión con `auditor-de-fuga` y `revisor-de-codigo-ia` (resumen en `reports/04_features.md`).
+
+- ☐ Quien **no** escribió una variable sabe explicar por qué se conservó o se descartó _(lo verifica el grupo; preguntas en `reports/04_features.md`)_.
