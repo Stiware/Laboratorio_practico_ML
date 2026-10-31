@@ -14,7 +14,7 @@ _______________  (en 2 frases: qué predice el modelo, para quién y para apoyar
 
 ## Datos de entrenamiento
 
-- **Fuente y licencia:** _______________
+- **Fuente y licencia:** *Brazilian E-Commerce Public Dataset by Olist* (https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce); licencia por verificar en esa página
 - **Tamaño:** _______________ filas de _______________ entidades
 - **Partición:** por _______________  (la unidad de análisis); la prueba se abrió **una sola vez**
 - **Datos personales:** _______________  (qué se eliminó o anonimizó)

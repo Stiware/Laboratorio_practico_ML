@@ -53,4 +53,4 @@ Nueve tablas relacionadas de una plataforma de comercio electrónico brasileña 
 - ¿`order_approved_at` aporta señal real o es fuga? Se mide con y sin ella en la etapa 4.
 - ¿Excluir los pedidos de más de 100 días o limitarlos? Depende de qué tan frecuentes sean en el periodo de prueba.
 - ¿Una partición por fecha da un resultado distinto a la partición por persona? Se compara en la etapa 4.
-- Confirmar con el instructor la licencia del dataset y si el 6,8 % de pedidos tardíos es suficiente para la parte de "retraso" de la app.
+- Verificar la licencia del dataset en su página de Kaggle (la fuente ya está citada) y confirmar con el instructor si el 6,8 % de pedidos tardíos es suficiente para la parte de "retraso" de la app.

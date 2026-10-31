@@ -32,6 +32,10 @@ pytest
 streamlit run app/streamlit_app.py
 ```
 
+## Datos
+Dataset: [*Brazilian E-Commerce Public Dataset by Olist*](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) (Kaggle): ~100.000 pedidos de comercio electrónico brasileño (2016–2018) en 9 archivos CSV.
+**Los CSV no están en el repositorio** (`data/raw/` está en `.gitignore`). Para reproducir el proyecto: descarga el dataset desde Kaggle, descomprímelo y copia los 9 CSV a `data/raw/`. Licencia: por verificar en la página del dataset.
+
 ## De dónde viene este repositorio
 Nació de la rama `feature/estudiantes` del repositorio del curso (ver `LEEME-PRIMERO.md`): una persona del grupo la clonó con
 `git clone --branch feature/estudiantes --single-branch …`, la apuntó a este repo con `git remote set-url origin …` y hizo `push`. Los demás integrantes
