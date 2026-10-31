@@ -15,33 +15,33 @@ Nombre de la "startup": _______________   Repositorio (público): ______________
 
 ## 2. Caso de negocio
 
-- **Pregunta de negocio** (una frase, que alguien sin formación técnica entienda):
-- **¿Quién usará el resultado y qué decisión tomará con él?**
-- **¿Qué cuesta equivocarse?** (cuál error es peor y por qué):
+- **Pregunta de negocio** (una frase, que alguien sin formación técnica entienda): ¿Cuántos días tardará en llegar un pedido y llegará antes o después de la fecha que le prometimos al cliente?
+- **¿Quién usará el resultado y qué decisión tomará con él?** Equipos de logística y atención al cliente de un comercio electrónico: planificar la operación, avisar de posibles retrasos y ajustar la fecha prometida.
+- **¿Qué cuesta equivocarse?** (cuál error es peor y por qué): Subestimar los días (prometer más rápido de lo real) genera retrasos y clientes molestos; sobrestimarlos alarga plazos y pierde ventas. Supuesto: subestimar cuesta 3 veces más (3 a 1); respaldado por las reseñas (nota 4,3 a tiempo vs 2,6 tarde) y evaluado con 1, 2, 3, 5 y 9 a 1. Ver `notebooks/01_caso_negocio.ipynb`.
 
 ## 3. Datos
 
-- **Fuente** (enlace de Kaggle, empresa, etc.):
-- **Filas / columnas:**
-- **Variable objetivo** (columna que queremos predecir o describir):
-- **Tipo de problema:** ☐ clasificación  ☐ regresión  ☐ clusterización
-- **¿Una misma entidad (cliente, paciente, empresa) aparece en varias filas?** ☐ no  ☐ sí → la partición
-  será por: _______________
-- **Datos personales o confidenciales presentes:** ☐ no  ☐ sí → se eliminarán/anonimizarán así:
+- **Fuente** (enlace de Kaggle, empresa, etc.): Brazilian E-Commerce Public Dataset by Olist (Kaggle). 9 CSV en `data/raw/`.
+- **Filas / columnas:** 99.441 pedidos × 8 columnas en `olist_orders_dataset.csv`; 96.478 están entregados. Las demás tablas se unen por `order_id`, `customer_id`, `product_id` y `seller_id`.
+- **Variable objetivo** (columna que queremos predecir o describir): días de entrega = `order_delivered_customer_date` − `order_purchase_timestamp` (se construye; solo pedidos `delivered`). Mediana 10,2 días, media 12,6, p99 46,1, máximo 209,6.
+- **Tipo de problema:** ☐ clasificación  ☒ regresión  ☐ clusterización
+- **¿Una misma entidad (cliente, paciente, empresa) aparece en varias filas?** ☐ no  ☒ sí → la partición
+  será por: `customer_unique_id` (99.441 `customer_id` corresponden a 96.096 personas) o por fecha de compra; por decidir en el EDA.
+- **Datos personales o confidenciales presentes:** ☐ no  ☒ sí → los identificadores ya vienen anonimizados (hash); se descartan los textos libres de reseñas (`review_comment_*`) y no se usan ids como variables.
 - **Licencia o permiso de uso de los datos:**
 
 ## 4. Métrica
 
-- **Métrica principal:** _______________   **Por qué esa y no otra:**
-- **Métricas secundarias:**
-- **Línea base** (qué resultado obtiene una regla simple o un modelo trivial):
+- **Métrica principal:** MAE (días), propuesta.   **Por qué esa y no otra:** se lee directo en días y no exagera los pedidos extremos como el RMSE.
+- **Métricas secundarias:** RMSE, y % de retrasos detectados (pedido entregado después de `order_estimated_delivery_date`).
+- **Línea base** (qué resultado obtiene una regla simple o un modelo trivial): predecir siempre la mediana (10,2 días) da un MAE de ≈ 6,1 días. Usar la fecha prometida por Olist da ≈ 12,7 días (promete en promedio 23,7 días). Con costos 3 a 1 la referencia a vencer es el mejor plazo fijo (15,7 días): costo medio 12,1 por pedido.
 
 ## 5. Riesgos
 
-- Fuga de información posible:
-- Sesgos o equidad:
-- Datos faltantes o de mala calidad:
-- Límites de lo que el modelo puede decir:
+- Fuga de información posible: `order_delivered_carrier_date`, `order_delivered_customer_date`, `order_status` y las reseñas (`review_*`) se conocen después de la compra; no pueden ser variables de entrada.
+- Sesgos o equidad: el desempeño puede variar por estado/región del cliente; se revisa por segmento.
+- Datos faltantes o de mala calidad: 2.965 pedidos sin fecha de entrega (cancelados, en tránsito, etc.); 775 pedidos sin ítems; 610 productos sin categoría; casos extremos de hasta 209 días.
+- Límites de lo que el modelo puede decir: datos de 2016–2018 de una sola plataforma; no captura huelgas, clima ni feriados.
 
 ## 6. Entregables y fechas
 
