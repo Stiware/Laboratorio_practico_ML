@@ -4,7 +4,7 @@
 > lo ejecutan (3 y 4). El resultado final, con las decisiones, va a `reports/01_eda.md`.
 > Guía: `material-del-curso/kit/guia-eda-y-preprocesamiento.md` · Ejemplo: `material-del-curso/ejemplo-creditsight/reports/01_eda.md`.
 
-**Grupo:** _______________   **Fecha:** 30 oct 2026   **Estado:** ☒ borrador  ☐ cerrada
+**Grupo:** _______________   **Fecha:** 30 oct 2026   **Estado:** ☒ borrador  ☐ cerrada _(falta que el grupo valide las decisiones)_
 
 ## 1. Qué esperamos encontrar (se escribe ANTES de mirar los datos)
 
@@ -74,7 +74,7 @@ Otros hallazgos de calidad que respaldan las decisiones:
 
 ## 5. Criterios de cierre
 
-- ☐ `notebooks/02_eda.ipynb` corre de principio a fin sin errores. _(falta: `ID_COL` y `TARGET` siguen en `None` en el notebook)_
+- ☒ `notebooks/02_eda.ipynb` corre de principio a fin sin errores (`ID_COL = order_id`, `TARGET = dias_entrega`).
 - ☒ Unidad de análisis y `ID_COL` declarados por escrito (sección 3).
 - ☒ Al menos **5 decisiones** con cifra, acción y motivo.
 - ☒ Datos personales identificados y plan para eliminarlos al cargar.

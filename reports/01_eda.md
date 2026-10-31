@@ -2,7 +2,7 @@
 
 > Resultado de la exploración de los 9 CSV de Olist en `data/raw/`. Cada hallazgo termina en una decisión,
 > y cada decisión se implementa con pruebas en `src/olistbr/data/` (funciones por crear).
-> Detalle completo: `especificaciones/02-eda.md`. Estado: **borrador** (falta correr `notebooks/02_eda.ipynb`).
+> Detalle completo: `especificaciones/02-eda.md`. Estado: **borrador**. Cifras verificadas ejecutando `notebooks/02_eda.ipynb`; falta que el grupo valide las decisiones.
 
 ## Qué son los datos
 
@@ -49,7 +49,7 @@ Nueve tablas relacionadas de una plataforma de comercio electrónico brasileña 
 
 ## Qué queda abierto
 
-- Correr `notebooks/02_eda.ipynb`: `ID_COL` y `TARGET` siguen en `None`.
+- Validar en grupo las 10 decisiones (sobre todo la 2, excluir los pedidos de más de 100 días).
 - ¿`order_approved_at` aporta señal real o es fuga? Se mide con y sin ella en la etapa 4.
 - ¿Excluir los pedidos de más de 100 días o limitarlos? Depende de qué tan frecuentes sean en el periodo de prueba.
 - ¿Una partición por fecha da un resultado distinto a la partición por persona? Se compara en la etapa 4.
