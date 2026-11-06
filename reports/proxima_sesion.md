@@ -12,27 +12,24 @@
 | 6 Optimización | **Hecho, revisado y reproducible** (una segunda ejecución completa dio exactamente lo mismo) | `reports/06_optimizacion.md`, `06_best_params.json` |
 | 7 Validación final | **Hecho y revisado. La prueba ya se abrió (2026-11-05 20:44:44): no se vuelve a abrir.** El modelo mejora al plazo fijo con confianza (9,216 contra 11,709; −2,493 [−2,608 ; −2,373]) | `reports/07_validacion.md`, `07_metricas_test.json` |
 | 8 Registro | **Hecho y revisado.** `workspace.default.ontrack_plazo_entrega`, versión 1, alias `champion` | `reports/08_registro.md`, `08_registro.json` |
-| 9 Inferencia y app | **Borrador de la especificación, pendiente de que el grupo responda Q1 a Q8** | `especificaciones/09-inferencia-app.md` |
+| 9 Inferencia y app | **Hecho y revisado.** `streamlit run app/streamlit_app.py` recomienda una fecha; probado en Safari y en Python 3.12 | `models/ficha_modelo.md`, `reports/09_verificacion_python312.txt` |
 | Informe técnico, presentación | Pendiente | — |
 
 Todo el trabajo va en `main`. **Nada de las etapas 6 a 8 tiene commit todavía**: conviene hacerlo pronto (al menos `reports/prueba_abierta.txt`,
 `reports/07_decisiones_congeladas.json` y los resultados), en commits separados por etapa, revisando `git status` antes.
 
-## Siguiente paso: etapa 9 (inferencia y app)
+## Siguiente paso: clase 5 (despliegue, informe y presentación)
 
-1. Aprobar `especificaciones/09-inferencia-app.md` → Spec Kit (especificación, plan, tareas, con aprobación del grupo).
-2. Exportar `models/model.joblib` **desde el champion**; comprobar que carga en el entorno de la app (**el modelo se guardó con Python 3.14; el proyecto pide 3.12**).
-3. `models/input_schema.json` con rangos posibles (no solo los observados) y adaptar `src/olistbr/inference/predict.py`, hoy hecho para **clasificación**, a regresión:
-   días y plazo. El modelo espera las 25 columnas que produce `add_features`.
-4. `app/streamlit_app.py`: no consulta Databricks; valida entradas; aviso de uso responsable (el plazo es una estimación; ≈ 1 de cada 4 pedidos llega después;
-   vigilar la cobertura cada mes; la ubicación del cliente cambia el plazo).
-5. `models/ficha_modelo.md` con las cifras de `reports/07_validacion.md`, sus límites y lo no evaluado.
-6. **No volver a leer la prueba**: comprobar el modelo exportado con filas del entrenamiento.
+1. **Primero, resolver los datos subidos a GitHub** (ver la bitácora del 6 nov): `test.parquet`, `train.parquet`, `extreme_orders.parquet` y el estudio de Optuna
+   quedaron en el commit `257f861` de `origin/main`. Restaurar el `.gitignore` y decidir en grupo cómo sacarlos.
+2. Desplegar la app en Streamlit Community Cloud con Python 3.12 (`requirements.txt` en la raíz; `models/model.joblib` e `input_schema.json` sí se versionan) y
+   completar `reports/09_despliegue.md`.
+3. `reports/informe_tecnico.md` y `presentacion/ejecutiva.md` (máximo 5 diapositivas) con las cifras de `reports/07_validacion.md`.
 
 ## Cómo retomar
 
 ```bash
-.venv/bin/python -m pytest tests -q            # 242 pruebas en verde
+.venv/bin/python -m pytest tests -q            # 265 pruebas en verde
 ```
 
 - `data/raw/` (CSV de Kaggle) y `data/processed/` no se versionan. Si faltan: descargar los CSV y ejecutar el notebook 03.

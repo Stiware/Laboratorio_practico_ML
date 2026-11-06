@@ -1,0 +1,234 @@
+{
+  "fields": [
+    "order_purchase_timestamp",
+    "seller_state",
+    "customer_state",
+    "distance_km",
+    "product_category_name",
+    "n_items",
+    "main_seller_items",
+    "price_sum",
+    "freight_sum",
+    "weight_g_sum",
+    "volume_cm3_sum"
+  ],
+  "required": [
+    "order_purchase_timestamp",
+    "seller_state",
+    "customer_state"
+  ],
+  "numeric": [
+    "distance_km",
+    "n_items",
+    "main_seller_items",
+    "price_sum",
+    "freight_sum",
+    "weight_g_sum",
+    "volume_cm3_sum"
+  ],
+  "integer_columns": [
+    "n_items",
+    "main_seller_items"
+  ],
+  "labels": {
+    "order_purchase_timestamp": "Fecha de compra",
+    "seller_state": "Estado del vendedor",
+    "customer_state": "Estado del cliente",
+    "distance_km": "Distancia vendedor–cliente (km)",
+    "product_category_name": "Categoría del producto",
+    "n_items": "Número de ítems",
+    "main_seller_items": "Ítems del vendedor principal",
+    "price_sum": "Precio total (R$)",
+    "freight_sum": "Flete total (R$)",
+    "weight_g_sum": "Peso total (g)",
+    "volume_cm3_sum": "Volumen total (cm³)"
+  },
+  "states": [
+    "AC",
+    "AL",
+    "AM",
+    "AP",
+    "BA",
+    "CE",
+    "DF",
+    "ES",
+    "GO",
+    "MA",
+    "MG",
+    "MS",
+    "MT",
+    "PA",
+    "PB",
+    "PE",
+    "PI",
+    "PR",
+    "RJ",
+    "RN",
+    "RO",
+    "RR",
+    "RS",
+    "SC",
+    "SE",
+    "SP",
+    "TO"
+  ],
+  "categories": [
+    "agro_industry_and_commerce",
+    "air_conditioning",
+    "art",
+    "arts_and_craftmanship",
+    "audio",
+    "auto",
+    "baby",
+    "bed_bath_table",
+    "books_general_interest",
+    "books_imported",
+    "books_technical",
+    "cds_dvds_musicals",
+    "christmas_supplies",
+    "cine_photo",
+    "computers",
+    "computers_accessories",
+    "consoles_games",
+    "construction_tools_construction",
+    "construction_tools_lights",
+    "construction_tools_safety",
+    "cool_stuff",
+    "costruction_tools_garden",
+    "costruction_tools_tools",
+    "diapers_and_hygiene",
+    "drinks",
+    "dvds_blu_ray",
+    "electronics",
+    "fashio_female_clothing",
+    "fashion_bags_accessories",
+    "fashion_childrens_clothes",
+    "fashion_male_clothing",
+    "fashion_shoes",
+    "fashion_sport",
+    "fashion_underwear_beach",
+    "fixed_telephony",
+    "flowers",
+    "food",
+    "food_drink",
+    "furniture_bedroom",
+    "furniture_decor",
+    "furniture_living_room",
+    "furniture_mattress_and_upholstery",
+    "garden_tools",
+    "health_beauty",
+    "home_appliances",
+    "home_appliances_2",
+    "home_comfort_2",
+    "home_confort",
+    "home_construction",
+    "housewares",
+    "industry_commerce_and_business",
+    "kitchen_dining_laundry_garden_furniture",
+    "la_cuisine",
+    "luggage_accessories",
+    "market_place",
+    "music",
+    "musical_instruments",
+    "office_furniture",
+    "party_supplies",
+    "pc_gamer",
+    "perfumery",
+    "pet_shop",
+    "portateis_cozinha_e_preparadores_de_alimentos",
+    "security_and_services",
+    "signaling_and_security",
+    "small_appliances",
+    "small_appliances_home_oven_and_coffee",
+    "sports_leisure",
+    "stationery",
+    "tablets_printing_image",
+    "telephony",
+    "toys",
+    "watches_gifts"
+  ],
+  "valid_range": {
+    "distance_km": [
+      0.0,
+      4500.0
+    ],
+    "price_sum": [
+      0.0,
+      20000.0
+    ],
+    "freight_sum": [
+      0.0,
+      2000.0
+    ],
+    "n_items": [
+      1.0,
+      30.0
+    ],
+    "main_seller_items": [
+      1.0,
+      30.0
+    ],
+    "weight_g_sum": [
+      0.0,
+      200000.0
+    ],
+    "volume_cm3_sum": [
+      0.0,
+      1500000.0
+    ]
+  },
+  "observed_range": {
+    "distance_km": [
+      0.0,
+      3399.190905798758
+    ],
+    "n_items": [
+      1.0,
+      20.0
+    ],
+    "main_seller_items": [
+      1.0,
+      20.0
+    ],
+    "price_sum": [
+      0.85,
+      7160.0
+    ],
+    "freight_sum": [
+      0.0,
+      1794.96
+    ],
+    "weight_g_sum": [
+      2.0,
+      184400.0
+    ],
+    "volume_cm3_sum": [
+      168.0,
+      1076544.0
+    ]
+  },
+  "median": {
+    "distance_km": 434.27797730882725,
+    "n_items": 1.0,
+    "main_seller_items": 1.0,
+    "price_sum": 86.33,
+    "freight_sum": 17.19,
+    "weight_g_sum": 750.0,
+    "volume_cm3_sum": 7220.0
+  },
+  "min_purchase_date": "2016-01-01",
+  "observed_period": [
+    "2017-01-05",
+    "2018-08-29"
+  ],
+  "late_share_total": 0.2644808743,
+  "late_share_by_region": {
+    "Centro-Oeste": 0.269298,
+    "Nordeste": 0.231073,
+    "Norte": 0.297386,
+    "Sudeste": 0.268203,
+    "Sul": 0.262234
+  },
+  "app_title": "OnTrack · Fecha de entrega recomendada",
+  "responsible_use": "- La fecha es una **estimación para planificar, no una promesa**: en la prueba, cerca de **1 de cada 4 pedidos** llegó después del plazo del modelo (es lo que implica que atrasarse cueste 3 veces más que sobrar). La fecha se cuenta desde el día de compra y se redondea al día, así que esa proporción es aproximada.\n- En los meses de alta demanda (fin de año e inicio de año) el plazo **quedó corto** en la validación: hay que vigilar la cobertura cada mes.\n- La **ubicación del cliente** cambia el plazo; revisa el % de pedidos tarde de su región.\n- El modelo se entrenó con pedidos de Olist de **enero de 2017 a agosto de 2018**: no se validó para otras fechas.\n- La decisión final es de una persona. Límites y cifras en `models/ficha_modelo.md`."
+}

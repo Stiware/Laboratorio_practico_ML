@@ -32,6 +32,14 @@ pytest
 streamlit run app/streamlit_app.py
 ```
 
+## La app (OnTrack · Fecha de entrega recomendada)
+```bash
+streamlit run app/streamlit_app.py
+```
+Pide 11 datos del pedido (fecha de compra, estados, distancia, categoría, ítems, precio, flete, peso y volumen; «No sé» en los que no se conozcan) y recomienda
+la fecha de entrega. Usa `models/model.joblib` y `models/input_schema.json` (los genera `notebooks/09_inferencia.ipynb` desde el modelo `champion` registrado en
+Databricks) y **no consulta Databricks**. Si un dato es imposible, explica qué corregir. Límites y cifras: `models/ficha_modelo.md`.
+
 ## Datos
 Dataset: [*Brazilian E-Commerce Public Dataset by Olist*](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) (Kaggle): ~100.000 pedidos de comercio electrónico brasileño (2016–2018) en 9 archivos CSV.
 **Los CSV no están en el repositorio** (`data/raw/` está en `.gitignore`). Para reproducir el proyecto: descarga el dataset desde Kaggle, descomprímelo y copia los 9 CSV a `data/raw/`. Licencia del dataset: CC BY-NC-SA 4.0 (atribución a Olist, uso no comercial, compartir igual).

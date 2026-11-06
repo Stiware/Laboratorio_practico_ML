@@ -6,7 +6,7 @@
 > **Toda la plantilla está hecha para clasificación** (clase, probabilidades, matriz de costos). OnTrack es **regresión**: recomienda un **plazo en días**.
 > La guía lo prevé: «en regresión la salida es un número; pide a Claude la adaptación de `predict.py` y de la app».
 
-**Grupo:** _______________   **Fecha:** 5 nov 2026   **Estado:** ☒ borrador  ☐ cerrada _(falta que el grupo responda Q1 a Q8)_
+**Grupo:** _______________   **Fecha:** 5 nov 2026   **Estado:** ☐ borrador  ☒ cerrada _(el grupo aceptó todas las propuestas de Q1 a Q8 el 6 nov 2026)_
 
 ## 1. Qué cambia frente a la plantilla
 
@@ -17,7 +17,9 @@
 | `inference/predict.py`, `inference/schema.py`, `tests/test_inference.py` | clasificación | **se reescriben para regresión** (son de esta etapa; no los usa ninguna otra) |
 | Comprobación «el exportado es el evaluado» | con la prueba | **sin la prueba** (ya se leyó dos veces): mismas predicciones que `final_pipeline.joblib` en pedidos del entrenamiento; el champion ya se comparó con la prueba en la etapa 8 |
 
-## 2. Preguntas para el grupo
+## 2. Preguntas y decisiones del grupo (6 nov 2026)
+
+**Decisión:** el grupo aceptó **todas** las propuestas de Claude (columna «Propuesta») el 6 nov 2026.
 
 | # | Pregunta | Por qué importa | Propuesta de Claude |
 |---|---|---|---|
@@ -56,10 +58,10 @@
 
 ## 6. Criterios de cierre
 
-- ☐ Q1 a Q8 respondidas y confirmadas por el grupo.
-- ☐ `models/model.joblib` exportado desde el champion y con las mismas predicciones que el modelo evaluado.
-- ☐ Carga y predice igual en Python 3.12.
-- ☐ `predict` responde a una fila normal y a una con «No sé», y se niega con un mensaje claro ante un dato imposible (pruebas).
-- ☐ `streamlit run app/streamlit_app.py` muestra el formulario, la fecha recomendada y el aviso de uso responsable.
-- ☐ Ficha del modelo completa con cifras reales.
-- ☐ `pytest tests` en verde; revisión con `revisor-de-codigo-ia`.
+- ☒ Q1 a Q8 respondidas y confirmadas por el grupo (6 nov 2026).
+- ☒ `models/model.joblib` exportado desde el champion y con las mismas predicciones que el modelo evaluado.
+- ☒ Carga y predice igual en Python 3.12.
+- ☒ `predict` responde a una fila normal y a una con «No sé», y se niega con un mensaje claro ante un dato imposible (pruebas).
+- ☒ `streamlit run app/streamlit_app.py` muestra el formulario, la fecha recomendada y el aviso de uso responsable.
+- ☒ Ficha del modelo completa con cifras reales.
+- ☒ `pytest tests` en verde; revisión con `revisor-de-codigo-ia`.

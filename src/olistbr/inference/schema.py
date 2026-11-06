@@ -1,94 +1,112 @@
-"""Esquema de entrada del modelo: qué columnas espera, qué rangos son plausibles y qué categorías conoce.
+"""Esquema de entrada de OnTrack (etapa 9): qué pregunta la app, qué valores son posibles y qué conoce el modelo.
 
-El esquema es un archivo (`models/input_schema.json`) que viaja con el modelo. Lo usan
-`predict.py` (para validar entradas) y la app (para construir su formulario).
+El esquema es un archivo (`models/input_schema.json`) que viaja con el modelo. Lo usan `predict.py` (para validar un pedido) y la
+app (para construir su formulario). Se arma **solo con el entrenamiento** y con los resultados ya guardados de la prueba
+(`reports/07_metricas_test.json`, `07_segmentos.csv`); nunca lee la prueba.
 
-Uso típico, en el notebook de inferencia:
-
-    from olistbr.inference.schema import build_schema
-    schema = build_schema(train, numeric=[...], categorical=[...], class_names=["no", "si"],
-                          cost_matrix=None, valid_range={"edad": (0, 120)}, path="../models/input_schema.json")
-
-Este módulo es para problemas de **clasificación**. Si tu problema es de regresión o de clusterización,
-adapta `predict.py` y la app (la guía `guia-validacion-registro-y-app.md` explica qué cambia).
+Reemplaza la plantilla del curso, que era de clasificación: OnTrack es **regresión** y recomienda un plazo en días.
 """
 import json
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
+from olistbr.config import UNKNOWN_CATEGORY
 
-def _is_integer_column(values: pd.Series) -> bool:
-    """True si todos los valores no vacíos son enteros (se usará un campo entero en la app)."""
-    clean = values.dropna()
-    return bool(len(clean)) and bool((clean == np.round(clean)).all())
+# Los 11 datos que se le piden a la persona (lo que se conoce al momento de la compra). El vendedor no se pregunta: su código
+# es anónimo y nadie lo conoce; el modelo lo trata como «otros» (vendedores poco frecuentes).
+FORM_FIELDS = [
+    "order_purchase_timestamp", "seller_state", "customer_state", "distance_km", "product_category_name", "n_items",
+    "main_seller_items", "price_sum", "freight_sum", "weight_g_sum", "volume_cm3_sum",
+]
+REQUIRED_FIELDS = ["order_purchase_timestamp", "seller_state", "customer_state"]  # sin ellos el plazo no tiene sentido
+NUMERIC_FIELDS = ["distance_km", "n_items", "main_seller_items", "price_sum", "freight_sum", "weight_g_sum", "volume_cm3_sum"]
+INTEGER_FIELDS = ["n_items", "main_seller_items"]
+
+# Lo POSIBLE en el mundo real (decisión del grupo, Q3 de `especificaciones/09-inferencia-app.md`), no lo observado en los datos.
+# Fuera de estos rangos la predicción se niega a responder.
+VALID_RANGES = {
+    "distance_km": (0, 4500),          # ≈ la mayor distancia dentro de Brasil (máximo observado: 3.399 km)
+    "price_sum": (0, 20000),           # reales; máximo observado 7.160
+    "freight_sum": (0, 2000),          # máximo observado 1.795
+    "n_items": (1, 30),                # un pedido tiene al menos un ítem; máximo observado 20
+    "main_seller_items": (1, 30),      # además, no puede superar el número de ítems
+    "weight_g_sum": (0, 200000),       # gramos; máximo observado 184.400
+    "volume_cm3_sum": (0, 1500000),    # cm³; máximo observado 1.076.544
+}
+MIN_PURCHASE_DATE = "2016-01-01"       # antes de esto Olist no tenía datos
+
+LABELS = {
+    "order_purchase_timestamp": "Fecha de compra",
+    "seller_state": "Estado del vendedor",
+    "customer_state": "Estado del cliente",
+    "distance_km": "Distancia vendedor–cliente (km)",
+    "product_category_name": "Categoría del producto",
+    "n_items": "Número de ítems",
+    "main_seller_items": "Ítems del vendedor principal",
+    "price_sum": "Precio total (R$)",
+    "freight_sum": "Flete total (R$)",
+    "weight_g_sum": "Peso total (g)",
+    "volume_cm3_sum": "Volumen total (cm³)",
+}
+
+APP_TITLE = "OnTrack · Fecha de entrega recomendada"
+RESPONSIBLE_USE = (
+    "- La fecha es una **estimación para planificar, no una promesa**: en la prueba, cerca de **1 de cada 4 pedidos** llegó después del plazo "
+    "del modelo (es lo que implica que atrasarse cueste 3 veces más que sobrar). La fecha se cuenta desde el día de compra y se redondea al día, "
+    "así que esa proporción es aproximada.\n"
+    "- En los meses de alta demanda (fin de año e inicio de año) el plazo **quedó corto** en la validación: hay que vigilar la cobertura cada mes.\n"
+    "- La **ubicación del cliente** cambia el plazo; revisa el % de pedidos tarde de su región.\n"
+    "- El modelo se entrenó con pedidos de Olist de **enero de 2017 a agosto de 2018**: no se validó para otras fechas.\n"
+    "- La decisión final es de una persona. Límites y cifras en `models/ficha_modelo.md`."
+)
 
 
-def build_schema(
-    df: pd.DataFrame,
-    numeric: list[str],
-    categorical: list[str],
-    class_names: list[str],
-    cost_matrix=None,
-    valid_range: dict | None = None,
-    labels: dict | None = None,
-    review_threshold: float = 0.55,
-    path: str | Path | None = None,
-) -> dict:
-    """Construye (y opcionalmente guarda) el esquema de entrada a partir de los datos de ENTRENAMIENTO.
+def build_schema(train: pd.DataFrame, test_results: dict | None = None, segments: pd.DataFrame | None = None, path=None) -> dict:
+    """Arma (y opcionalmente guarda) el esquema a partir del ENTRENAMIENTO y de los resultados ya guardados de la prueba.
 
-    - `df`: datos de entrenamiento, con las columnas de entrada (sin la columna objetivo).
-    - `numeric` / `categorical`: columnas que el modelo necesita, tal como llegan en una fila nueva.
-    - `class_names`: nombres de las clases, en el orden de las columnas de `predict_proba`.
-    - `cost_matrix`: opcional; matriz k x k (filas = clase real, columnas = clase decidida). Si se da, la
-      decisión será la de menor costo esperado; si no, la clase más probable.
-    - `valid_range`: opcional; {columna: (mínimo, máximo)} de lo que es POSIBLE en el mundo real. Fuera de ese
-      rango, `predict` se niega a responder. Distinto del rango observado, que solo genera una advertencia.
-    - `labels`: opcional; {columna: etiqueta legible} para la app.
+    - `train`: tabla con las columnas de `train.parquet`.
+    - `test_results`: contenido de `reports/07_metricas_test.json` (para el % de pedidos tarde del modelo en la prueba).
+    - `segments`: `reports/07_segmentos.csv` (para el % tarde por región del cliente en la prueba).
+    No guarda identificadores ni filas: solo categorías, rangos, medianas y textos.
     """
-    missing = [c for c in numeric + categorical if c not in df.columns]
+    missing = [c for c in FORM_FIELDS if c not in train.columns]
     if missing:
-        raise ValueError(f"Faltan columnas en los datos: {', '.join(missing)}")
-    if len(class_names) < 2:
-        raise ValueError("class_names debe tener al menos 2 clases")
-    if cost_matrix is not None:
-        cost = np.asarray(cost_matrix, dtype=float)
-        if cost.shape != (len(class_names), len(class_names)):
-            raise ValueError(f"cost_matrix debe ser {len(class_names)} x {len(class_names)}; llegó {cost.shape}")
-
+        raise ValueError(f"faltan columnas en el entrenamiento: {', '.join(missing)}")
+    states = sorted(set(train["seller_state"].dropna()) | set(train["customer_state"].dropna()))
+    categories = sorted(c for c in train["product_category_name"].dropna().unique() if c != UNKNOWN_CATEGORY)
+    dates = pd.to_datetime(train["order_purchase_timestamp"])
     schema = {
-        "numeric": list(numeric),
-        "categorical": list(categorical),
-        "class_names": [str(c) for c in class_names],
-        "categories": {c: sorted(df[c].dropna().astype(str).unique().tolist()) for c in categorical},
-        "observed_range": {},
-        "median": {},
-        "integer_columns": [],
-        "valid_range": {k: [float(v[0]), float(v[1])] for k, v in (valid_range or {}).items()},
-        "labels": dict(labels or {}),
-        "review_threshold": float(review_threshold),
+        "fields": list(FORM_FIELDS),
+        "required": list(REQUIRED_FIELDS),
+        "numeric": list(NUMERIC_FIELDS),
+        "integer_columns": list(INTEGER_FIELDS),
+        "labels": dict(LABELS),
+        "states": states,
+        "categories": categories,
+        "valid_range": {k: [float(lo), float(hi)] for k, (lo, hi) in VALID_RANGES.items()},
+        "observed_range": {c: [float(train[c].min()), float(train[c].max())] for c in NUMERIC_FIELDS},
+        "median": {c: float(train[c].median()) for c in NUMERIC_FIELDS},
+        "min_purchase_date": MIN_PURCHASE_DATE,
+        "observed_period": [dates.min().date().isoformat(), dates.max().date().isoformat()],
+        "late_share_total": None,
+        "late_share_by_region": {},
+        "app_title": APP_TITLE,
+        "responsible_use": RESPONSIBLE_USE,
     }
-    for col in numeric:
-        values = pd.to_numeric(df[col], errors="coerce").dropna()
-        if values.empty:
-            raise ValueError(f"La columna numérica '{col}' no tiene ningún valor numérico")
-        schema["observed_range"][col] = [float(values.min()), float(values.max())]
-        schema["median"][col] = float(values.median())
-        if _is_integer_column(values):
-            schema["integer_columns"].append(col)
-    if cost_matrix is not None:
-        schema["cost_matrix"] = np.asarray(cost_matrix, dtype=float).tolist()
+    if test_results:
+        model_row = next((r for r in test_results.get("resultado", []) if r["regla"].startswith("LightGBM")), None)
+        if model_row is not None:
+            schema["late_share_total"] = float(model_row["tarde"])
+    if segments is not None:
+        regions = segments[segments["segmento"] == "region"]
+        schema["late_share_by_region"] = {str(g): float(t) for g, t in zip(regions["grupo"], regions["tarde"])}
     if path is not None:
-        save_schema(schema, path)
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        Path(path).write_text(json.dumps(schema, ensure_ascii=False, indent=2), encoding="utf-8")
     return schema
 
 
-def save_schema(schema: dict, path: str | Path) -> None:
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(schema, indent=2, ensure_ascii=False), encoding="utf-8")
-
-
-def load_schema(path: str | Path) -> dict:
+def load_schema(path) -> dict:
+    """Lee el esquema guardado por `build_schema`."""
     return json.loads(Path(path).read_text(encoding="utf-8"))

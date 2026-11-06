@@ -1,0 +1,11 @@
+# Verificación de models/model.joblib en otro entorno (2026-11-06 18:48 -05)
+# Muestra: 1.000 pedidos del entrenamiento, solo las 25 columnas del modelo (data/processed/muestra_verificacion.parquet, no se versiona)
+## 1. Referencia en el entorno del grupo (.venv)
+Python 3.14.3 · modelo model.joblib
+referencia guardada: data/processed/muestra_verificacion.esperado.npy (1000 plazos)
+## 2. Entorno temporal con Python 3.12 y requirements.txt (uv)
+Python 3.12.12 · modelo model.joblib
+1000 plazos · iguales a la referencia: True · diferencia máxima: 0.00e+00
+código de salida: 0
+## 3. Pruebas de la inferencia y la app en Python 3.12
+36 passed in 3.67s
