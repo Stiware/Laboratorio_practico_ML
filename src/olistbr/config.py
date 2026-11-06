@@ -75,3 +75,20 @@ CALIBRATION_SIZE = 0.2
 
 # Un modelo gana "de forma consistente" si gana en al menos esta fracción de los pliegues (4 de 5).
 MIN_WIN_SHARE = 0.8
+
+# --- Etapa 6: optimización de hiperparámetros (especificaciones/06-optimizacion.md) --------------
+# Proporción de CLIENTES de entrenamiento que la búsqueda nunca ve; con ellos se comprueba si optimizar ayudó (guía §3.4).
+RESERVE_SIZE = 0.25
+RESERVE_SEED = 7  # semilla de la guía para la reserva; distinta de RANDOM_STATE a propósito
+
+# Presupuesto de ensayos por finalista, fijado antes de empezar (Q3). Un ensayo fallido también cuenta.
+TUNING_TRIALS = 20
+
+# Sorteos de clientes para el intervalo del 95 % de la comprobación honesta (regla 5).
+BOOTSTRAP_ROUNDS = 1000
+
+# Experimento de MLflow donde queda cada ensayo (Q8).
+TUNING_EXPERIMENT = "ontrack-optimizacion"
+
+# Si los dos finalistas empatan en la reserva (el intervalo cruza el cero), gana el más rápido y ganador del torneo (Q7).
+TIE_WINNER = "LightGBM cuantil 0,75"

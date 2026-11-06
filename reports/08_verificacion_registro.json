@@ -1,0 +1,11 @@
+{
+  "consulta": "solo lectura, después de ejecutar el notebook 08",
+  "fecha": "2026-11-05T21:00:26-05:00",
+  "nombre": "workspace.default.ontrack_plazo_entrega",
+  "champion_version": 1,
+  "estado": "READY",
+  "run_id": "18372a4fa18a4485beff97f9ced1e0fa",
+  "versiones_registradas": [
+    1
+  ]
+}

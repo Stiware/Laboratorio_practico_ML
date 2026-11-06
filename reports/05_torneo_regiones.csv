@@ -25,10 +25,10 @@ XGBoost,Sul,11088,5.322716,0.26452
 "XGBoost cuantil 0,75",Sudeste,52666,5.365242,0.245566
 "XGBoost cuantil 0,75",Sul,11088,6.413179,0.252255
 Bosque aleatorio liviano,Centro-Oeste,4467,5.419845,0.267517
-Bosque aleatorio liviano,Nordeste,7223,7.368174,0.310674
+Bosque aleatorio liviano,Nordeste,7223,7.368191,0.310674
 Bosque aleatorio liviano,Norte,1480,7.741372,0.339189
-Bosque aleatorio liviano,Sudeste,52666,4.548313,0.231649
-Bosque aleatorio liviano,Sul,11088,5.447442,0.264701
+Bosque aleatorio liviano,Sudeste,52666,4.548273,0.231649
+Bosque aleatorio liviano,Sul,11088,5.447434,0.264701
 Regresión lineal,Centro-Oeste,4467,5.338726,0.271547
 Regresión lineal,Nordeste,7223,7.338659,0.303475
 Regresión lineal,Norte,1480,7.756153,0.314189

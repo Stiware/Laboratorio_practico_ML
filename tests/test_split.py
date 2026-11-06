@@ -199,3 +199,106 @@ def test_forward_split_rejects_overlapping_dates():
 def test_forward_split_rejects_empty_validation():
     with pytest.raises(ValueError, match="vacía"):
         forward_split(_purchases(), valid_start="2030-01-01", valid_end="2030-02-01")
+
+
+# --- Etapa 6: optimización (especificaciones/06-optimizacion.md) ------------------------------------
+
+
+def test_config_tuning_constants():
+    """Las constantes de la optimización tienen los valores aprobados por el grupo (Q3, Q4, Q7, Q8 y regla 5)."""
+    from olistbr import config
+
+    assert config.RESERVE_SIZE == 0.25
+    assert config.RESERVE_SEED == 7
+    assert config.TUNING_TRIALS == 20
+    assert config.BOOTSTRAP_ROUNDS == 1000
+    assert config.TUNING_EXPERIMENT == "ontrack-optimizacion"
+    assert config.TIE_WINNER == "LightGBM cuantil 0,75"
+
+
+def test_reserve_split_25_percent_is_disjoint():
+    """La reserva de la optimización (25 % de los clientes, semilla 7) no comparte clientes con la búsqueda."""
+    from olistbr.config import RESERVE_SEED, RESERVE_SIZE
+
+    df = _orders(n_customers=200, per_customer=3)
+    search, reserved = split_by_group(df, test_size=RESERVE_SIZE, seed=RESERVE_SEED)
+    assert set(search["customer_unique_id"]).isdisjoint(set(reserved["customer_unique_id"]))
+    assert len(search) + len(reserved) == len(df)
+    assert reserved["customer_unique_id"].nunique() == 50  # 25 % de 200 clientes
+
+
+def _search_and_reserved():
+    """Clientes de búsqueda (s1–s3) y reservados (r1–r3) con compras antes y después del corte (casos hechos a mano)."""
+    def rows(customers, dates):
+        return pd.DataFrame({
+            "customer_unique_id": customers,
+            "order_purchase_timestamp": pd.to_datetime(dates),
+            "dias_entrega": 10.0,
+        })
+
+    search = rows(
+        ["s1", "s1", "s2", "s3"],
+        ["2017-11-03 08:00", "2018-04-10 08:00", "2018-02-28 23:30", "2018-06-01 08:00"],
+    )
+    reserved = rows(
+        ["r1", "r1", "r2", "r3"],
+        ["2018-01-15 08:00", "2018-03-01 00:10", "2018-08-31 22:00", "2018-09-02 08:00"],
+    )
+    return search, reserved
+
+
+def test_reserved_forward_split_uses_only_reserved_customers_in_valid():
+    """Se entrena solo con clientes de búsqueda y se valida solo con clientes reservados."""
+    from olistbr.data.split import reserved_forward_split
+
+    train, valid = reserved_forward_split(*_search_and_reserved())
+    assert set(train["customer_unique_id"]) <= {"s1", "s2", "s3"}
+    assert set(valid["customer_unique_id"]) <= {"r1", "r2", "r3"}
+    assert set(train["customer_unique_id"]).isdisjoint(set(valid["customer_unique_id"]))
+
+
+def test_reserved_forward_split_dates():
+    """Los días límite cuentan completos: compras hasta el 28 de febrero entrenan; del 1 de marzo al 31 de agosto validan."""
+    from olistbr.data.split import reserved_forward_split
+
+    # solo fechas de compra: el filtro de «ya entregado al corte» se apaga aquí y se prueba aparte
+    train, valid = reserved_forward_split(*_search_and_reserved(), known_at_cutoff=False)
+    assert sorted(train["order_purchase_timestamp"].astype(str)) == ["2017-11-03 08:00:00", "2018-02-28 23:30:00"]
+    assert sorted(valid["order_purchase_timestamp"].astype(str)) == ["2018-03-01 00:10:00", "2018-08-31 22:00:00"]
+    assert "2018-04-10 08:00:00" not in set(train["order_purchase_timestamp"].astype(str))  # búsqueda posterior al corte
+    assert "2018-09-02 08:00:00" not in set(valid["order_purchase_timestamp"].astype(str))  # reserva de septiembre
+
+
+def test_reserved_forward_split_rejects_shared_customers():
+    """Si búsqueda y reserva comparten un cliente, la partición falla en vez de mezclarlo."""
+    from olistbr.data.split import reserved_forward_split
+
+    search, reserved = _search_and_reserved()
+    reserved.loc[1, "customer_unique_id"] = "s1"
+    with pytest.raises(AssertionError):
+        reserved_forward_split(search, reserved)
+
+
+def test_reserved_forward_split_rejects_bad_dates_and_empty_sides():
+    from olistbr.data.split import reserved_forward_split
+
+    search, reserved = _search_and_reserved()
+    with pytest.raises(ValueError, match="debe terminar antes"):
+        reserved_forward_split(search, reserved, train_end="2018-03-01", valid_start="2018-03-01")
+    with pytest.raises(ValueError, match="vacía"):
+        reserved_forward_split(search, reserved, valid_start="2030-01-01", valid_end="2030-02-01")
+    with pytest.raises(ValueError, match="vacío"):
+        reserved_forward_split(search, reserved, train_end="2010-01-01")
+
+
+def test_reserved_forward_split_drops_orders_not_delivered_by_the_cutoff():
+    """Una compra de febrero entregada en marzo no se conocía al corte: no entra al entrenamiento hacia adelante."""
+    from olistbr.data.split import reserved_forward_split
+
+    search, reserved = _search_and_reserved()
+    search.loc[search["order_purchase_timestamp"] == pd.Timestamp("2018-02-28 23:30"), "dias_entrega"] = 5.0  # llega el 5 de marzo
+    train, _ = reserved_forward_split(search, reserved)
+    assert pd.Timestamp("2018-02-28 23:30") not in set(train["order_purchase_timestamp"])
+    assert len(train) == 1
+    train_all, _ = reserved_forward_split(search, reserved, known_at_cutoff=False)
+    assert len(train_all) == 2

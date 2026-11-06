@@ -1,0 +1,11 @@
+variable,shap_abs_medio,shap_medio
+same_state,1.930867,0.056728
+distance_km,1.064347,0.002335
+log_distance_x_same_state,0.657624,-0.001447
+customer_state_SP,0.571331,-0.137214
+log_distance,0.465412,-0.040864
+freight_sum,0.434843,0.091529
+customer_state_MG,0.28386,0.028525
+customer_state_RJ,0.255738,-0.039927
+customer_region_Nordeste,0.242723,-0.034312
+is_slow_weekday,0.225872,-0.001059

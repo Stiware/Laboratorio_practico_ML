@@ -1,0 +1,5 @@
+modelo,costo,cobertura,tarde,mae,n_ajuste,n_validacion
+"LightGBM cuantil 0,75 · partida",8.852318,0.805342,0.194658,6.245466,31988,7937
+"LightGBM cuantil 0,75 · optimizado",8.852528,0.797279,0.202721,6.179583,31988,7937
+"HistGradientBoosting cuantil 0,75 · partida",8.8507,0.811516,0.188484,6.279913,31988,7937
+"HistGradientBoosting cuantil 0,75 · optimizado",8.840376,0.80131,0.19869,6.181115,31988,7937

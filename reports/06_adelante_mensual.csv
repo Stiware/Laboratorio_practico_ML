@@ -1,0 +1,25 @@
+modelo,mes,n_pedidos,cobertura,mediana_dias,p75_dias
+"LightGBM cuantil 0,75 · partida",2018-03,1472,0.612092,12.912002,20.93024
+"LightGBM cuantil 0,75 · partida",2018-04,1373,0.806264,9.262512,14.240891
+"LightGBM cuantil 0,75 · partida",2018-05,1358,0.735641,9.470573,16.10662
+"LightGBM cuantil 0,75 · partida",2018-06,1237,0.904608,8.095926,11.867292
+"LightGBM cuantil 0,75 · partida",2018-07,1217,0.891537,7.407627,10.642882
+"LightGBM cuantil 0,75 · partida",2018-08,1280,0.922656,6.957986,9.957486
+"LightGBM cuantil 0,75 · optimizado",2018-03,1472,0.603261,12.912002,20.93024
+"LightGBM cuantil 0,75 · optimizado",2018-04,1373,0.792425,9.262512,14.240891
+"LightGBM cuantil 0,75 · optimizado",2018-05,1358,0.731222,9.470573,16.10662
+"LightGBM cuantil 0,75 · optimizado",2018-06,1237,0.897332,8.095926,11.867292
+"LightGBM cuantil 0,75 · optimizado",2018-07,1217,0.884963,7.407627,10.642882
+"LightGBM cuantil 0,75 · optimizado",2018-08,1280,0.915625,6.957986,9.957486
+"HistGradientBoosting cuantil 0,75 · partida",2018-03,1472,0.620924,12.912002,20.93024
+"HistGradientBoosting cuantil 0,75 · partida",2018-04,1373,0.809905,9.262512,14.240891
+"HistGradientBoosting cuantil 0,75 · partida",2018-05,1358,0.74595,9.470573,16.10662
+"HistGradientBoosting cuantil 0,75 · partida",2018-06,1237,0.912692,8.095926,11.867292
+"HistGradientBoosting cuantil 0,75 · partida",2018-07,1217,0.89811,7.407627,10.642882
+"HistGradientBoosting cuantil 0,75 · partida",2018-08,1280,0.921875,6.957986,9.957486
+"HistGradientBoosting cuantil 0,75 · optimizado",2018-03,1472,0.609375,12.912002,20.93024
+"HistGradientBoosting cuantil 0,75 · optimizado",2018-04,1373,0.797524,9.262512,14.240891
+"HistGradientBoosting cuantil 0,75 · optimizado",2018-05,1358,0.731222,9.470573,16.10662
+"HistGradientBoosting cuantil 0,75 · optimizado",2018-06,1237,0.902991,8.095926,11.867292
+"HistGradientBoosting cuantil 0,75 · optimizado",2018-07,1217,0.890715,7.407627,10.642882
+"HistGradientBoosting cuantil 0,75 · optimizado",2018-08,1280,0.917188,6.957986,9.957486

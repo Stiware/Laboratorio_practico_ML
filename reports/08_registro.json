@@ -1,0 +1,16 @@
+{
+  "plataforma": "databricks (Unity Catalog)",
+  "motivo_respaldo": null,
+  "experimento": "ontrack-modelo-final",
+  "nombre": "workspace.default.ontrack_plazo_entrega",
+  "version": 1,
+  "alias": "champion",
+  "run_id": "18372a4fa18a4485beff97f9ced1e0fa",
+  "fecha": "2026-11-05T20:47:08-05:00",
+  "ida_y_vuelta": {
+    "plazos_iguales_500": true,
+    "costo_registro": 9.216261802048438,
+    "costo_etapa_7": 9.216261802,
+    "coincide": true
+  }
+}

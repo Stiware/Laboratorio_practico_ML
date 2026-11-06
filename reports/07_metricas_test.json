@@ -1,0 +1,195 @@
+{
+  "decisiones_congeladas": {
+    "fecha_hora": "2026-11-05T20:44:38-05:00",
+    "modelo": "LightGBM cuantil 0,75",
+    "parametros": {
+      "n_estimators": 418,
+      "learning_rate": 0.04929150418823739,
+      "num_leaves": 70,
+      "min_child_samples": 73,
+      "subsample": 0.9451160314432759,
+      "colsample_bytree": 0.6517070032860601,
+      "reg_lambda": 4.429844133210426
+    },
+    "decision_parametros": "optimizados",
+    "recalibracion": "no: la prueba se partió por cliente, no por fecha; la recalibración es una regla de uso (vigilar la cobertura mensual)",
+    "metrica_principal": "costo 3 a 1 del plazo recomendado (subestimar cuesta 3 veces más)",
+    "regla": "el plazo recomendado es el percentil 75 que predice el modelo (sin margen)",
+    "baseline_principal": "Plazo fijo (percentil 75)",
+    "baselines_de_referencia": [
+      "Siempre la mediana",
+      "Plazo prometido por Olist"
+    ],
+    "criterio": "el modelo mejora con confianza si todo el intervalo del 95 % de costo(modelo) − costo(baseline principal) está bajo cero",
+    "intervalos": "1000 sorteos de clientes completos, semilla 42",
+    "segmentos": [
+      "región del cliente",
+      "mes de compra"
+    ],
+    "interpretacion": "SHAP sobre 2.000 pedidos de la prueba; ubicación del cliente = atributo sensible",
+    "no_evaluado": [
+      "marca de fin de año (F6)",
+      "historial por vendedor (F8)",
+      "probabilidad de retraso por pedido"
+    ]
+  },
+  "prueba_abierta": "2026-11-05T20:44:44-05:00",
+  "pedidos_prueba": 19215,
+  "clientes_prueba": 18607,
+  "arboles": 418,
+  "resultado": [
+    {
+      "regla": "LightGBM cuantil 0,75",
+      "costo": 9.216261802,
+      "costo_ic_inf": 9.0045212575,
+      "costo_ic_sup": 9.4222269167,
+      "tarde": 0.2644808743,
+      "tarde_ic_inf": 0.2586325489,
+      "tarde_ic_sup": 0.2706035737,
+      "cobertura": 0.7355191257,
+      "cobertura_ic_inf": 0.7293964263,
+      "cobertura_ic_sup": 0.7413674511,
+      "mae": 5.6603003745,
+      "sesgo": -2.104338947,
+      "dif_costo": -2.4925953605,
+      "dif_ic_inf": -2.6077884113,
+      "dif_ic_sup": -2.3729954234,
+      "mejora_con_confianza": true
+    },
+    {
+      "regla": "Plazo fijo (percentil 75)",
+      "costo": 11.7088571626,
+      "costo_ic_inf": 11.4675924816,
+      "costo_ic_sup": 11.9455179866,
+      "tarde": 0.24610981,
+      "tarde_ic_inf": 0.2405061754,
+      "tarde_ic_sup": 0.2518847496,
+      "cobertura": 0.75389019,
+      "cobertura_ic_inf": 0.7481152504,
+      "cobertura_ic_sup": 0.7594938246,
+      "mae": 7.5003724938,
+      "sesgo": -3.291887825,
+      "dif_costo": null,
+      "dif_ic_inf": null,
+      "dif_ic_sup": null,
+      "mejora_con_confianza": null
+    },
+    {
+      "regla": "Siempre la mediana",
+      "costo": 14.1693960917,
+      "costo_ic_inf": 13.8777622918,
+      "costo_ic_sup": 14.4790052679,
+      "tarde": 0.5018995576,
+      "tarde_ic_inf": 0.4950974332,
+      "tarde_ic_sup": 0.50883157,
+      "cobertura": 0.4981004424,
+      "cobertura_ic_inf": 0.49116843,
+      "cobertura_ic_sup": 0.5049025668,
+      "mae": 5.9831405116,
+      "sesgo": 2.2031150685,
+      "dif_costo": null,
+      "dif_ic_inf": null,
+      "dif_ic_sup": null,
+      "mejora_con_confianza": null
+    },
+    {
+      "regla": "Plazo prometido por Olist",
+      "costo": 13.9119880091,
+      "costo_ic_inf": 13.7629825244,
+      "costo_ic_sup": 14.067497297,
+      "tarde": 0.0809263596,
+      "tarde_ic_inf": 0.0771415777,
+      "tarde_ic_sup": 0.0848601734,
+      "cobertura": 0.9190736404,
+      "cobertura_ic_inf": 0.9151398266,
+      "cobertura_ic_sup": 0.9228584223,
+      "mae": 12.5407828887,
+      "sesgo": -11.1695777683,
+      "dif_costo": null,
+      "dif_ic_inf": null,
+      "dif_ic_sup": null,
+      "mejora_con_confianza": null
+    }
+  ],
+  "mejora_con_confianza": true,
+  "holgura_y_atraso": [
+    {
+      "regla": "LightGBM cuantil 0,75",
+      "pct_a_tiempo": 0.7355191257,
+      "pct_tarde": 0.2644808743,
+      "holgura_media": 5.2783395091,
+      "atraso_medio": 6.7225303847
+    },
+    {
+      "regla": "Plazo fijo (percentil 75)",
+      "pct_a_tiempo": 0.75389019,
+      "pct_tarde": 0.24610981,
+      "holgura_media": 7.1577137245,
+      "atraso_medio": 8.5500140527
+    },
+    {
+      "regla": "Siempre la mediana",
+      "pct_a_tiempo": 0.4981004424,
+      "pct_tarde": 0.5018995576,
+      "holgura_media": 3.7944409617,
+      "atraso_medio": 8.1552727588
+    },
+    {
+      "regla": "Plazo prometido por Olist",
+      "pct_a_tiempo": 0.9190736404,
+      "pct_tarde": 0.0809263596,
+      "holgura_media": 12.8990537945,
+      "atraso_medio": 8.4719313148
+    }
+  ],
+  "sensibilidad_costo": [
+    {
+      "regla": "LightGBM cuantil 0,75",
+      "1 a 1": 5.6603003745,
+      "2 a 1": 7.4382810883,
+      "3 a 1": 9.216261802,
+      "5 a 1": 12.7722232296,
+      "9 a 1": 19.8841460846
+    },
+    {
+      "regla": "Plazo fijo (percentil 75)",
+      "1 a 1": 7.5003724938,
+      "2 a 1": 9.6046148282,
+      "3 a 1": 11.7088571626,
+      "5 a 1": 15.9173418314,
+      "9 a 1": 24.334311169
+    },
+    {
+      "regla": "Siempre la mediana",
+      "1 a 1": 5.9831405116,
+      "2 a 1": 10.0762683017,
+      "3 a 1": 14.1693960917,
+      "5 a 1": 22.3556516719,
+      "9 a 1": 38.7281628321
+    },
+    {
+      "regla": "Plazo prometido por Olist",
+      "1 a 1": 12.5407828887,
+      "2 a 1": 13.2263854489,
+      "3 a 1": 13.9119880091,
+      "5 a 1": 15.2831931295,
+      "9 a 1": 18.0256033704
+    }
+  ],
+  "con_extremos": [
+    {
+      "regla": "LightGBM cuantil 0,75",
+      "pedidos": 19279,
+      "costo": 10.426760827,
+      "tarde": 0.2669225582,
+      "mae": 6.0552080251
+    },
+    {
+      "regla": "Plazo fijo (percentil 75)",
+      "pedidos": 19279,
+      "costo": 12.9507380186,
+      "tarde": 0.2486124799,
+      "mae": 7.9023905162
+    }
+  ]
+}

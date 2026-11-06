@@ -1,0 +1,114 @@
+{
+  "fecha": "2026-11-05",
+  "semillas": {
+    "reserva": 7,
+    "pliegues": 42,
+    "muestreador": 42,
+    "bootstrap": 42
+  },
+  "presupuesto_por_finalista": 20,
+  "seguimiento": {
+    "donde": "databricks",
+    "experimento": "ontrack-optimizacion"
+  },
+  "finalistas": {
+    "LightGBM cuantil 0,75": {
+      "parametros_partida": {
+        "n_estimators": 300,
+        "learning_rate": 0.05,
+        "num_leaves": 31,
+        "min_child_samples": 20,
+        "subsample": 1.0,
+        "colsample_bytree": 1.0,
+        "reg_lambda": 0.0
+      },
+      "parametros_optimizados": {
+        "n_estimators": 418,
+        "learning_rate": 0.04929150418823739,
+        "num_leaves": 70,
+        "min_child_samples": 73,
+        "subsample": 0.9451160314432759,
+        "colsample_bytree": 0.6517070032860601,
+        "reg_lambda": 4.429844133210426
+      },
+      "mejor_costo_busqueda_optimista": 9.391905724334297,
+      "comprobacion": {
+        "costo_partida": 9.150780800397495,
+        "costo_optimizado": 9.082830485597796,
+        "diferencia": -0.06795031479969794,
+        "decision": "optimizados",
+        "motivo": "todo el intervalo está por debajo de cero: los parámetros optimizados cuestan menos que los de partida",
+        "arboles_partida": 300,
+        "arboles_optimizado": 418,
+        "ic": [
+          -0.09596303460956998,
+          -0.04133928034963014
+        ]
+      },
+      "parametros_elegidos": {
+        "n_estimators": 418,
+        "learning_rate": 0.04929150418823739,
+        "num_leaves": 70,
+        "min_child_samples": 73,
+        "subsample": 0.9451160314432759,
+        "colsample_bytree": 0.6517070032860601,
+        "reg_lambda": 4.429844133210426
+      }
+    },
+    "HistGradientBoosting cuantil 0,75": {
+      "parametros_partida": {
+        "max_iter": 300,
+        "learning_rate": 0.05,
+        "max_leaf_nodes": 31,
+        "min_samples_leaf": 20,
+        "l2_regularization": 0.0,
+        "max_features": 1.0,
+        "early_stopping": "auto"
+      },
+      "parametros_optimizados": {
+        "max_iter": 530,
+        "learning_rate": 0.025300933645112916,
+        "max_leaf_nodes": 110,
+        "min_samples_leaf": 129,
+        "l2_regularization": 0.014179503870540556,
+        "max_features": 0.5322612983210335
+      },
+      "mejor_costo_busqueda_optimista": 9.41138043493829,
+      "comprobacion": {
+        "costo_partida": 9.201912424352317,
+        "costo_optimizado": 9.102908355365752,
+        "diferencia": -0.09900406898656398,
+        "decision": "optimizados",
+        "motivo": "todo el intervalo está por debajo de cero: los parámetros optimizados cuestan menos que los de partida",
+        "arboles_partida": 163,
+        "arboles_optimizado": 530,
+        "ic": [
+          -0.13118428580819838,
+          -0.07002169332392427
+        ]
+      },
+      "parametros_elegidos": {
+        "max_iter": 530,
+        "learning_rate": 0.025300933645112916,
+        "max_leaf_nodes": 110,
+        "min_samples_leaf": 129,
+        "l2_regularization": 0.014179503870540556,
+        "max_features": 0.5322612983210335
+      }
+    }
+  },
+  "eleccion": {
+    "modelo": "LightGBM cuantil 0,75",
+    "diferencia_a_menos_b": -0.02007786976795621,
+    "ic": [
+      -0.038032971372722296,
+      -0.002058430808785752
+    ],
+    "motivo": "todo el intervalo está por debajo de cero: LightGBM cuantil 0,75 cuesta menos que HistGradientBoosting cuantil 0,75"
+  },
+  "hacia_adelante": {
+    "pedidos_entrenamiento": 31988,
+    "pedidos_validacion": 7937
+  },
+  "minutos_de_ejecucion": 3.5
+}

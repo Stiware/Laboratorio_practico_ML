@@ -15,6 +15,7 @@ from olistbr.config import (
     MIN_SELLER_ITEMS,
     N_FOLDS,
     RANDOM_STATE,
+    TARGET,
     TEST_SIZE,
 )
 from olistbr.features.categories import frequent_values, group_rare_categories
@@ -119,5 +120,42 @@ def forward_split(
     if valid.empty:
         raise ValueError(f"no hay compras entre {valid_start} y {valid_end}: la validación hacia adelante está vacía")
     train = df[in_train & ~df[group_col].isin(set(valid[group_col]))]
+    assert_disjoint_groups(train, valid, group_col=group_col)
+    return train.reset_index(drop=True), valid.reset_index(drop=True)
+
+
+def reserved_forward_split(
+    search: pd.DataFrame,
+    reserved: pd.DataFrame,
+    train_end: str = FORWARD_TRAIN_END,
+    valid_start: str = FORWARD_VALID_START,
+    valid_end: str = FORWARD_VALID_END,
+    group_col: str = GROUP_COL,
+    date_col: str = "order_purchase_timestamp",
+    target: str = TARGET,
+    known_at_cutoff: bool = True,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Prueba hacia adelante de la optimización: entrena con el pasado de la **búsqueda** y valida con el futuro de la **reserva**.
+
+    La de `forward_split` ya no sirve después de la búsqueda, porque sus meses de validación incluyen clientes que la búsqueda vio
+    (Q6 de `especificaciones/06-optimizacion.md`). Aquí la validación solo tiene clientes reservados, que la búsqueda nunca vio.
+    Los días `train_end` y `valid_end` se incluyen completos. Es informativa: no cambia ninguna decisión.
+
+    Con `known_at_cutoff=True` (por defecto) el entrenamiento solo trae pedidos **ya entregados** antes de `valid_start`
+    (compra + `target` días): una compra de fines de febrero entregada en marzo no se conocía al corte (auditor-de-fuga).
+    """
+    if pd.Timestamp(train_end) >= pd.Timestamp(valid_start):
+        raise ValueError(f"el entrenamiento ({train_end}) debe terminar antes de que empiece la validación ({valid_start})")
+    one_day = pd.Timedelta(days=1)
+    train = search[search[date_col] < pd.Timestamp(train_end) + one_day]
+    if known_at_cutoff:
+        delivered = train[date_col] + pd.to_timedelta(train[target], unit="D")
+        train = train[delivered < pd.Timestamp(valid_start)]
+    dates = reserved[date_col]
+    valid = reserved[(dates >= pd.Timestamp(valid_start)) & (dates < pd.Timestamp(valid_end) + one_day)]
+    if valid.empty:
+        raise ValueError(f"no hay compras de clientes reservados entre {valid_start} y {valid_end}: la validación está vacía")
+    if train.empty:
+        raise ValueError(f"no hay compras de la búsqueda hasta {train_end}: el entrenamiento está vacío")
     assert_disjoint_groups(train, valid, group_col=group_col)
     return train.reset_index(drop=True), valid.reset_index(drop=True)

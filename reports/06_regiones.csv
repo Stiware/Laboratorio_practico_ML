@@ -1,0 +1,6 @@
+modelo,grupo,n_pedidos,mae,tarde
+"LightGBM cuantil 0,75",Centro-Oeste,1128,5.989252,0.275709
+"LightGBM cuantil 0,75",Nordeste,1805,8.305703,0.249307
+"LightGBM cuantil 0,75",Norte,380,8.731245,0.292105
+"LightGBM cuantil 0,75",Sudeste,13122,5.056029,0.262841
+"LightGBM cuantil 0,75",Sul,2790,6.037531,0.248029

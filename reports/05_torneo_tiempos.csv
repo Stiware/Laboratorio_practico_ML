@@ -1,61 +1,61 @@
 modelo,pliegue,fit_seconds
-Línea base: siempre la mediana,0,1.013
-Línea base: siempre la mediana,1,1.03
-Línea base: siempre la mediana,2,0.738
-Línea base: siempre la mediana,3,1.065
-Línea base: siempre la mediana,4,0.733
-Línea base: plazo fijo (percentil 75),0,0.731
-Línea base: plazo fijo (percentil 75),1,0.727
-Línea base: plazo fijo (percentil 75),2,0.758
-Línea base: plazo fijo (percentil 75),3,0.721
-Línea base: plazo fijo (percentil 75),4,0.895
-Regresión lineal,0,1.201
-Regresión lineal,1,1.228
-Regresión lineal,2,1.224
-Regresión lineal,3,1.274
-Regresión lineal,4,1.235
-Ridge,0,0.848
-Ridge,1,0.852
-Ridge,2,0.852
-Ridge,3,0.845
-Ridge,4,0.859
-Bosque aleatorio liviano,0,6.883
-Bosque aleatorio liviano,1,6.814
-Bosque aleatorio liviano,2,6.795
-Bosque aleatorio liviano,3,7.274
-Bosque aleatorio liviano,4,6.804
-LightGBM,0,2.125
-LightGBM,1,2.116
-LightGBM,2,2.017
-LightGBM,3,2.034
-LightGBM,4,2.082
-XGBoost,0,4.715
-XGBoost,1,5.2
-XGBoost,2,4.842
-XGBoost,3,5.502
-XGBoost,4,4.492
-"LightGBM cuantil 0,75",0,2.72
-"LightGBM cuantil 0,75",1,3.116
-"LightGBM cuantil 0,75",2,3.103
-"LightGBM cuantil 0,75",3,3.215
-"LightGBM cuantil 0,75",4,3.382
-"XGBoost cuantil 0,75",0,8.436
-"XGBoost cuantil 0,75",1,9.729
-"XGBoost cuantil 0,75",2,8.131
-"XGBoost cuantil 0,75",3,7.442
-"XGBoost cuantil 0,75",4,6.315
-"HistGradientBoosting cuantil 0,75",0,7.432
-"HistGradientBoosting cuantil 0,75",1,6.762
-"HistGradientBoosting cuantil 0,75",2,9.223
-"HistGradientBoosting cuantil 0,75",3,8.233
-"HistGradientBoosting cuantil 0,75",4,7.288
-Línea base: siempre la mediana,adelante,0.816
-Línea base: plazo fijo (percentil 75),adelante,0.517
-Regresión lineal,adelante,0.932
-Ridge,adelante,0.607
-Bosque aleatorio liviano,adelante,4.641
-LightGBM,adelante,1.634
-XGBoost,adelante,3.432
-"LightGBM cuantil 0,75",adelante,2.154
-"XGBoost cuantil 0,75",adelante,4.652
-"HistGradientBoosting cuantil 0,75",adelante,5.169
+Línea base: siempre la mediana,0,0.395
+Línea base: siempre la mediana,1,0.352
+Línea base: siempre la mediana,2,0.352
+Línea base: siempre la mediana,3,0.372
+Línea base: siempre la mediana,4,0.393
+Línea base: plazo fijo (percentil 75),0,0.495
+Línea base: plazo fijo (percentil 75),1,0.425
+Línea base: plazo fijo (percentil 75),2,0.408
+Línea base: plazo fijo (percentil 75),3,0.438
+Línea base: plazo fijo (percentil 75),4,0.438
+Regresión lineal,0,0.616
+Regresión lineal,1,0.586
+Regresión lineal,2,0.632
+Regresión lineal,3,0.66
+Regresión lineal,4,0.634
+Ridge,0,0.464
+Ridge,1,0.435
+Ridge,2,0.526
+Ridge,3,0.446
+Ridge,4,0.451
+Bosque aleatorio liviano,0,5.71
+Bosque aleatorio liviano,1,5.38
+Bosque aleatorio liviano,2,6.577
+Bosque aleatorio liviano,3,5.964
+Bosque aleatorio liviano,4,7.268
+LightGBM,0,2.269
+LightGBM,1,2.124
+LightGBM,2,2.042
+LightGBM,3,2.015
+LightGBM,4,2.071
+XGBoost,0,2.536
+XGBoost,1,2.687
+XGBoost,2,3.026
+XGBoost,3,2.896
+XGBoost,4,5.074
+"LightGBM cuantil 0,75",0,3.841
+"LightGBM cuantil 0,75",1,2.691
+"LightGBM cuantil 0,75",2,2.748
+"LightGBM cuantil 0,75",3,2.016
+"LightGBM cuantil 0,75",4,1.893
+"XGBoost cuantil 0,75",0,3.17
+"XGBoost cuantil 0,75",1,2.981
+"XGBoost cuantil 0,75",2,3.283
+"XGBoost cuantil 0,75",3,3.257
+"XGBoost cuantil 0,75",4,3.541
+"HistGradientBoosting cuantil 0,75",0,14.002
+"HistGradientBoosting cuantil 0,75",1,8.546
+"HistGradientBoosting cuantil 0,75",2,14.68
+"HistGradientBoosting cuantil 0,75",3,11.259
+"HistGradientBoosting cuantil 0,75",4,9.766
+Línea base: siempre la mediana,adelante,0.299
+Línea base: plazo fijo (percentil 75),adelante,0.308
+Regresión lineal,adelante,0.39
+Ridge,adelante,0.337
+Bosque aleatorio liviano,adelante,5.823
+LightGBM,adelante,1.423
+XGBoost,adelante,4.212
+"LightGBM cuantil 0,75",adelante,1.444
+"XGBoost cuantil 0,75",adelante,2.647
+"HistGradientBoosting cuantil 0,75",adelante,8.082

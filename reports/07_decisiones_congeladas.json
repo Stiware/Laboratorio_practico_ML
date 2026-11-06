@@ -1,0 +1,34 @@
+{
+  "fecha_hora": "2026-11-05T20:44:38-05:00",
+  "modelo": "LightGBM cuantil 0,75",
+  "parametros": {
+    "n_estimators": 418,
+    "learning_rate": 0.04929150418823739,
+    "num_leaves": 70,
+    "min_child_samples": 73,
+    "subsample": 0.9451160314432759,
+    "colsample_bytree": 0.6517070032860601,
+    "reg_lambda": 4.429844133210426
+  },
+  "decision_parametros": "optimizados",
+  "recalibracion": "no: la prueba se partió por cliente, no por fecha; la recalibración es una regla de uso (vigilar la cobertura mensual)",
+  "metrica_principal": "costo 3 a 1 del plazo recomendado (subestimar cuesta 3 veces más)",
+  "regla": "el plazo recomendado es el percentil 75 que predice el modelo (sin margen)",
+  "baseline_principal": "Plazo fijo (percentil 75)",
+  "baselines_de_referencia": [
+    "Siempre la mediana",
+    "Plazo prometido por Olist"
+  ],
+  "criterio": "el modelo mejora con confianza si todo el intervalo del 95 % de costo(modelo) − costo(baseline principal) está bajo cero",
+  "intervalos": "1000 sorteos de clientes completos, semilla 42",
+  "segmentos": [
+    "región del cliente",
+    "mes de compra"
+  ],
+  "interpretacion": "SHAP sobre 2.000 pedidos de la prueba; ubicación del cliente = atributo sensible",
+  "no_evaluado": [
+    "marca de fin de año (F6)",
+    "historial por vendedor (F8)",
+    "probabilidad de retraso por pedido"
+  ]
+}
