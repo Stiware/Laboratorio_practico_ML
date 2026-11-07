@@ -32,13 +32,31 @@ pytest
 streamlit run app/streamlit_app.py
 ```
 
-## La app (OnTrack · Fecha de entrega recomendada)
+## La app (OnTrack · Simulador de entregas)
 ```bash
 streamlit run app/streamlit_app.py
 ```
-Pide 11 datos del pedido (fecha de compra, estados, distancia, categoría, ítems, precio, flete, peso y volumen; «No sé» en los que no se conozcan) y recomienda
-la fecha de entrega. Usa `models/model.joblib` y `models/input_schema.json` (los genera `notebooks/09_inferencia.ipynb` desde el modelo `champion` registrado en
-Databricks) y **no consulta Databricks**. Si un dato es imposible, explica qué corregir. Límites y cifras: `models/ficha_modelo.md`.
+La app integra el diseño del prototipo OnTrack con el modelo del laboratorio:
+
+- **Dashboard General**: desempeño del modelo en la prueba, cobertura y tasa de retraso por región.
+- **Datos & EDA**: volumen, distribución del plazo, distancia vendedor–cliente y diferencias regionales.
+- **Metodología & Flujo**: embudo de depuración, partición por cliente y controles contra fuga de información.
+- **Simulador OnTrack**: formulario de 11 datos del pedido (fecha de compra, estados, distancia, categoría, ítems, precio, flete, peso y volumen; «No sé» en los que no se conozcan) que recomienda la fecha de entrega y el plazo en días.
+
+Usa `models/model.joblib` y `models/input_schema.json` (los genera `notebooks/09_inferencia.ipynb` desde el modelo `champion` registrado en
+Databricks) y **no consulta Databricks**. Si un dato es imposible, explica qué corregir; si es poco común, avisa. Límites y cifras: `models/ficha_modelo.md`.
+
+Archivos de la app:
+
+```text
+app/
+├── streamlit_app.py          # arranque, navegación y carga del modelo
+├── simulator.py              # formulario y panel de resultados conectados al modelo
+├── views.py                  # Dashboard, EDA y Metodología
+├── theme.py                  # estados, categorías, ejemplos y componentes visuales
+└── assets/css/ontrack.css    # diseño OnTrack (tarjeta blanca, acentos esmeralda, Inter + JetBrains Mono)
+```
+
 
 ## Datos
 Dataset: [*Brazilian E-Commerce Public Dataset by Olist*](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) (Kaggle): ~100.000 pedidos de comercio electrónico brasileño (2016–2018) en 9 archivos CSV.

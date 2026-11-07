@@ -1,0 +1,11 @@
+# Tema claro fijo: evita que el modo oscuro del navegador deje texto claro sobre fondo claro en los campos.
+[theme]
+base = "light"
+primaryColor = "#10b981"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f1f5f9"
+textColor = "#0f172a"
+font = "sans serif"
+
+[browser]
+gatherUsageStats = false

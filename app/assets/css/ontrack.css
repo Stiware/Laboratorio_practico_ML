@@ -1,0 +1,1333 @@
+/* OnTrack · estilos de la app de Streamlit.
+   Traduce a CSS el diseño del prototipo estático (tarjeta blanca sobre fondo oscuro,
+   acentos esmeralda, tipografía Inter + JetBrains Mono y componentes redondeados). */
+
+:root {
+  --ot-emerald: #10b981;
+  --ot-emerald-dark: #059669;
+  --ot-emerald-soft: #ecfdf5;
+  --ot-emerald-border: #a7f3d0;
+  --ot-ink: #0f172a;
+  --ot-slate-900: #0f172a;
+  --ot-slate-800: #1e293b;
+  --ot-slate-700: #334155;
+  --ot-slate-500: #64748b;
+  --ot-slate-400: #94a3b8;
+  --ot-slate-300: #cbd5e1;
+  --ot-slate-200: #e2e8f0;
+  --ot-slate-100: #f1f5f9;
+  --ot-slate-50: #f8fafc;
+  --ot-bg: #141820;
+  --ot-amber: #f59e0b;
+  --ot-amber-dark: #b45309;
+  --ot-rose: #e11d48;
+  --ot-rose-soft: #fff1f2;
+  --ot-rose-border: #fecdd3;
+  --ot-radius: 18px;
+}
+
+/* ---------- Página y tarjeta principal ---------- */
+
+html,
+body,
+[class*="st-"],
+[class*="st-emotion"] {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.stApp {
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgba(16, 185, 129, 0.16), transparent 60%),
+    radial-gradient(900px 500px at 5% 110%, rgba(14, 165, 233, 0.12), transparent 55%),
+    var(--ot-bg);
+}
+
+[data-testid="stHeader"] {
+  background: transparent;
+}
+
+[data-testid="stToolbar"] {
+  right: 1rem;
+}
+
+#MainMenu,
+footer,
+[data-testid="stDecoration"],
+[data-testid="stToolbar"],
+[data-testid="stAppDeployButton"],
+[data-testid="stStatusWidget"] {
+  visibility: hidden;
+  display: none !important;
+}
+
+[data-testid="stAppViewBlockContainer"],
+[data-testid="stMainBlockContainer"] {
+  max-width: 1460px;
+  padding: 1.4rem 1.25rem 2.4rem;
+}
+
+.st-key-ontrack_card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 28px;
+  box-shadow: 0 30px 70px -28px rgba(2, 6, 23, 0.7);
+  padding: 1.15rem 1.4rem 1.45rem;
+}
+
+@media (max-width: 720px) {
+  .st-key-ontrack_card {
+    border-radius: 18px;
+    padding: 0.9rem 0.9rem 1.1rem;
+  }
+}
+
+/* ---------- Encabezado de marca ---------- */
+
+.ot-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.85rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--ot-slate-100);
+}
+
+.ot-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.ot-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  background: var(--ot-slate-900);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 18px -8px rgba(15, 23, 42, 0.7);
+}
+
+.ot-logo-mark {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: -0.08em;
+  color: var(--ot-emerald);
+  line-height: 1;
+}
+
+.ot-brand-copy {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ot-brand-name {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  color: var(--ot-slate-900);
+  line-height: 1;
+}
+
+.ot-brand-tag {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--ot-emerald-dark);
+  background: var(--ot-emerald-soft);
+  border: 1px solid var(--ot-emerald-border);
+  border-radius: 999px;
+  padding: 0.18rem 0.5rem;
+  letter-spacing: 0.02em;
+}
+
+.ot-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--ot-slate-500);
+  background: var(--ot-slate-50);
+  border: 1px solid var(--ot-slate-200);
+  border-radius: 999px;
+  padding: 0.38rem 0.75rem;
+}
+
+.ot-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ot-emerald);
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.16);
+  flex: 0 0 auto;
+}
+
+.ot-nav-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 0.15rem 0 0.55rem;
+  font-size: 0.72rem;
+  color: var(--ot-slate-400);
+}
+
+.ot-nav-caption strong {
+  color: var(--ot-slate-700);
+}
+
+.ot-nav-caption span {
+  color: var(--ot-emerald-dark);
+  font-weight: 600;
+}
+
+/* ---------- Encabezados de sección ---------- */
+
+.ot-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--ot-slate-100);
+  padding-bottom: 0.8rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.ot-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ot-emerald-dark);
+}
+
+.ot-eyebrow-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ot-emerald);
+  flex: 0 0 auto;
+}
+
+.ot-title {
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  color: var(--ot-slate-900);
+  margin: 0.18rem 0 0;
+  line-height: 1.15;
+}
+
+.ot-subtitle {
+  font-size: 0.78rem;
+  color: var(--ot-slate-500);
+  max-width: 58rem;
+  margin: 0.22rem 0 0;
+  line-height: 1.55;
+}
+
+.ot-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ot-slate-700);
+  background: var(--ot-slate-100);
+  border: 1px solid var(--ot-slate-200);
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  white-space: nowrap;
+}
+
+.ot-chip.emerald {
+  color: var(--ot-emerald-dark);
+  background: var(--ot-emerald-soft);
+  border-color: var(--ot-emerald-border);
+}
+
+.ot-chip.amber {
+  color: var(--ot-amber-dark);
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.ot-chip.rose {
+  color: #be123c;
+  background: var(--ot-rose-soft);
+  border-color: var(--ot-rose-border);
+}
+
+/* ---------- Tarjetas y KPI ---------- */
+
+.ot-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.7rem;
+  margin: 0.85rem 0 1rem;
+}
+
+.ot-kpi {
+  border: 1px solid var(--ot-slate-200);
+  background: var(--ot-slate-50);
+  border-radius: 14px;
+  padding: 0.85rem 0.95rem;
+  min-height: 92px;
+}
+
+.ot-kpi.accent {
+  background: var(--ot-emerald-soft);
+  border-color: var(--ot-emerald-border);
+}
+
+.ot-kpi.amber {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.ot-kpi-label {
+  font-size: 0.7rem;
+  color: var(--ot-slate-500);
+  line-height: 1.25;
+}
+
+.ot-kpi-value {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--ot-slate-900);
+  margin-top: 0.22rem;
+  line-height: 1.1;
+}
+
+.ot-kpi-value.accent {
+  color: var(--ot-emerald-dark);
+}
+
+.ot-kpi-value.amber {
+  color: var(--ot-amber-dark);
+}
+
+.ot-kpi-value small {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ot-slate-400);
+}
+
+.ot-kpi-note {
+  font-size: 0.66rem;
+  color: var(--ot-slate-400);
+  margin-top: 0.18rem;
+}
+
+.ot-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin: 0.85rem 0;
+}
+
+.ot-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin: 0.85rem 0;
+}
+
+@media (max-width: 900px) {
+  .ot-grid-2,
+  .ot-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ot-card {
+  border: 1px solid var(--ot-slate-200);
+  background: #ffffff;
+  border-radius: var(--ot-radius);
+  padding: 1.05rem 1.15rem;
+  box-shadow: 0 1px 2px rgba(2, 6, 23, 0.04);
+}
+
+.ot-card.soft {
+  background: var(--ot-slate-50);
+  box-shadow: none;
+}
+
+.ot-card.dark {
+  background: linear-gradient(155deg, #0e131b 0%, #0a1018 100%);
+  border-color: #1e293b;
+  color: #e2e8f0;
+  position: relative;
+  overflow: hidden;
+}
+
+.ot-card.dark::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(51, 65, 85, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(51, 65, 85, 0.16) 1px, transparent 1px);
+  background-size: 38px 38px;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.ot-card.dark > * {
+  position: relative;
+  z-index: 1;
+}
+
+.ot-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--ot-slate-900);
+  line-height: 1.25;
+}
+
+.ot-card.dark .ot-card-title {
+  color: #f8fafc;
+}
+
+.ot-card-sub {
+  font-size: 0.7rem;
+  color: var(--ot-slate-400);
+  margin-top: 0.15rem;
+  line-height: 1.4;
+}
+
+.ot-card.dark .ot-card-sub {
+  color: #94a3b8;
+}
+
+.ot-card-body {
+  font-size: 0.78rem;
+  color: var(--ot-slate-700);
+  line-height: 1.55;
+  margin-top: 0.55rem;
+}
+
+.ot-dark-metric {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 2.3rem;
+  font-weight: 800;
+  color: #6ee7b7;
+  line-height: 1;
+  margin-top: 0.7rem;
+}
+
+.ot-dark-metric small {
+  font-family: "Inter", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-left: 0.25rem;
+}
+
+.ot-dark-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+}
+
+.ot-dark-stat {
+  background: rgba(30, 41, 59, 0.55);
+  border: 1px solid #1e293b;
+  border-radius: 11px;
+  padding: 0.55rem 0.65rem;
+}
+
+.ot-dark-stat span {
+  display: block;
+  font-size: 0.62rem;
+  color: #94a3b8;
+}
+
+.ot-dark-stat strong {
+  display: block;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.82rem;
+  color: #f8fafc;
+  margin-top: 0.15rem;
+}
+
+@media (max-width: 720px) {
+  .ot-dark-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.ot-card.dark .ot-card-body {
+  color: #cbd5e1;
+}
+
+/* ---------- Barras y listas ---------- */
+
+.ot-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.7rem;
+}
+
+.ot-bar-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+}
+
+.ot-bar-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.72rem;
+  color: var(--ot-slate-700);
+}
+
+.ot-bar-label strong {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.72rem;
+  color: var(--ot-slate-900);
+}
+
+.ot-bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--ot-slate-100);
+  overflow: hidden;
+}
+
+.ot-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #34d399, var(--ot-emerald));
+}
+
+.ot-bar-fill.amber {
+  background: linear-gradient(90deg, #fbbf24, var(--ot-amber));
+}
+
+.ot-bar-fill.rose {
+  background: linear-gradient(90deg, #fb7185, var(--ot-rose));
+}
+
+.ot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+}
+
+.ot-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--ot-slate-700);
+  padding: 0.42rem 0.55rem;
+  border-radius: 10px;
+  background: rgba(241, 245, 249, 0.7);
+}
+
+.ot-list-row strong {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  color: var(--ot-slate-900);
+}
+
+.ot-list-row .ot-emerald {
+  color: var(--ot-emerald-dark);
+}
+
+.ot-list-row .ot-amber {
+  color: var(--ot-amber-dark);
+}
+
+.ot-list-row .ot-rose {
+  color: #be123c;
+}
+
+/* ---------- Embudo y partición ---------- */
+
+.ot-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.7rem;
+  margin-top: 0.75rem;
+}
+
+.ot-step {
+  border: 1px solid var(--ot-slate-200);
+  background: var(--ot-slate-50);
+  border-radius: 13px;
+  padding: 0.8rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 108px;
+}
+
+.ot-step-num {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--ot-slate-400);
+  letter-spacing: 0.05em;
+}
+
+.ot-step-name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ot-slate-800);
+  margin-top: 0.15rem;
+}
+
+.ot-step-value {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--ot-slate-900);
+  margin-top: 0.45rem;
+}
+
+.ot-step-note {
+  font-size: 0.65rem;
+  color: var(--ot-slate-400);
+}
+
+.ot-split {
+  display: flex;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+}
+
+.ot-split-part {
+  border-radius: 13px;
+  padding: 0.8rem 0.9rem;
+  flex: 1;
+}
+
+.ot-split-part.train {
+  background: var(--ot-slate-900);
+  color: #f8fafc;
+}
+
+.ot-split-part.test {
+  background: var(--ot-emerald-soft);
+  border: 1px solid var(--ot-emerald-border);
+  color: var(--ot-slate-900);
+}
+
+.ot-split-part .ot-split-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.75;
+}
+
+.ot-split-part .ot-split-value {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin-top: 0.15rem;
+}
+
+.ot-split-part .ot-split-note {
+  font-size: 0.68rem;
+  line-height: 1.45;
+  margin-top: 0.3rem;
+  opacity: 0.75;
+}
+
+@media (max-width: 720px) {
+  .ot-split {
+    flex-direction: column;
+  }
+}
+
+/* ---------- Simulador ---------- */
+
+.ot-sim-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--ot-slate-100);
+  margin-bottom: 0.15rem;
+}
+
+.ot-sim-title {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.ot-sim-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--ot-slate-900);
+  color: var(--ot-emerald);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.ot-sim-title strong {
+  display: block;
+  font-size: 0.86rem;
+  color: var(--ot-slate-900);
+  line-height: 1.2;
+}
+
+.ot-sim-title span {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--ot-slate-400);
+  margin-top: 0.12rem;
+}
+
+.ot-examples {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin: 0.55rem 0 0.2rem;
+}
+
+.ot-examples-label {
+  font-size: 0.68rem;
+  color: var(--ot-slate-400);
+  margin-right: 0.1rem;
+}
+
+.ot-derived {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.68rem;
+  color: var(--ot-slate-400);
+  background: var(--ot-slate-50);
+  border: 1px solid var(--ot-slate-200);
+  border-radius: 11px;
+  padding: 0.5rem 0.7rem;
+  margin: 0.15rem 0 0.25rem;
+}
+
+.ot-derived strong {
+  color: var(--ot-slate-700);
+}
+
+.ot-form-note {
+  font-size: 0.67rem;
+  color: var(--ot-slate-400);
+  text-align: center;
+  margin-top: 0.4rem;
+  line-height: 1.4;
+}
+
+.ot-result-head {
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--ot-slate-100);
+  margin-bottom: 0.65rem;
+}
+
+.ot-result-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.ot-result-badge {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ot-emerald-dark);
+  background: var(--ot-emerald-soft);
+  border: 1px solid var(--ot-emerald-border);
+  border-radius: 7px;
+  padding: 0.22rem 0.5rem;
+}
+
+.ot-result-time {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.66rem;
+  color: var(--ot-slate-400);
+}
+
+.ot-result-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: var(--ot-slate-900);
+  margin-top: 0.55rem;
+  letter-spacing: -0.02em;
+}
+
+.ot-result-sub {
+  font-size: 0.71rem;
+  color: var(--ot-emerald-dark);
+  font-weight: 500;
+  margin-top: 0.12rem;
+}
+
+.ot-pipeline {
+  background: var(--ot-slate-50);
+  border: 1px solid var(--ot-slate-200);
+  border-radius: 12px;
+  padding: 0.7rem 0.8rem;
+  margin: 0.65rem 0;
+}
+
+.ot-pipeline-label {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ot-slate-500);
+}
+
+.ot-pipeline-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.71rem;
+  color: var(--ot-slate-700);
+  padding-top: 0.3rem;
+}
+
+.ot-pipeline-row.model {
+  border-top: 1px solid var(--ot-slate-200);
+  margin-top: 0.35rem;
+  padding-top: 0.5rem;
+  font-weight: 700;
+  color: var(--ot-slate-900);
+}
+
+.ot-pipeline-row .ok {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--ot-emerald-dark);
+}
+
+.ot-pipeline-row .warn {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--ot-amber-dark);
+}
+
+.ot-attention {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: 12px;
+  padding: 0.7rem 0.8rem;
+  margin-top: 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.ot-attention.bajo {
+  color: var(--ot-emerald-dark);
+  background: var(--ot-emerald-soft);
+  border: 1px solid var(--ot-emerald-border);
+}
+
+.ot-attention.medio {
+  color: var(--ot-amber-dark);
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+
+.ot-attention.alto {
+  color: #be123c;
+  background: var(--ot-rose-soft);
+  border: 1px solid var(--ot-rose-border);
+}
+
+.ot-attention strong {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+
+.ot-idle {
+  border: 1px solid var(--ot-slate-200);
+  background: var(--ot-slate-50);
+  border-radius: var(--ot-radius);
+  padding: 1.1rem 1.15rem;
+}
+
+.ot-idle-title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ot-slate-900);
+}
+
+.ot-idle-copy {
+  font-size: 0.74rem;
+  color: var(--ot-slate-600, #475569);
+  line-height: 1.55;
+  margin-top: 0.55rem;
+}
+
+.ot-placeholder-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.72rem;
+  color: var(--ot-slate-500);
+  background: var(--ot-slate-50);
+  border: 1px solid var(--ot-slate-200);
+  border-radius: 10px;
+  padding: 0.55rem 0.65rem;
+  margin-top: 0.4rem;
+}
+
+.ot-placeholder-row .pending {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.66rem;
+  color: var(--ot-slate-400);
+}
+
+/* ---------- Nota de responsabilidad ---------- */
+
+.ot-footnote {
+  font-size: 0.68rem;
+  color: var(--ot-slate-400);
+  line-height: 1.5;
+  border-top: 1px solid var(--ot-slate-100);
+  margin-top: 1.1rem;
+  padding-top: 0.65rem;
+}
+
+/* ---------- Controles nativos de Streamlit ---------- */
+
+[data-testid="stWidgetLabel"] p,
+[data-testid="stWidgetLabel"] label {
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  color: var(--ot-slate-700) !important;
+}
+
+[data-testid="stMarkdownContainer"] p {
+  color: var(--ot-slate-700);
+}
+
+/* Selector segmentado (navegación) */
+[data-testid="stButtonGroup"],
+[data-testid="stSegmentedControl"] {
+  display: inline-flex !important;
+  flex-wrap: wrap;
+  gap: 4px;
+  background: var(--ot-slate-100) !important;
+  border: 1px solid var(--ot-slate-200) !important;
+  border-radius: 12px !important;
+  padding: 4px !important;
+}
+
+[data-testid="stButtonGroup"] button,
+[data-testid="stSegmentedControl"] button {
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--ot-slate-500) !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  padding: 0.4rem 0.8rem !important;
+  transition: all 0.15s ease;
+}
+
+[data-testid="stButtonGroup"] button:hover,
+[data-testid="stSegmentedControl"] button:hover {
+  color: var(--ot-slate-800) !important;
+  background: rgba(255, 255, 255, 0.55) !important;
+}
+
+[data-testid="stButtonGroup"] button[aria-pressed="true"],
+[data-testid="stButtonGroup"] button[aria-checked="true"],
+[data-testid="stButtonGroup"] button[data-selected="true"],
+[data-testid="stButtonGroup"] button[kind="segmented_controlActive"],
+[data-testid="stSegmentedControl"] button[aria-pressed="true"],
+[data-testid="stSegmentedControl"] button[aria-checked="true"] {
+  background: #ffffff !important;
+  color: var(--ot-slate-900) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 1px 3px rgba(2, 6, 23, 0.12) !important;
+}
+
+/* Tarjetas de métricas del resultado */
+[data-testid="stMetric"] {
+  background: var(--ot-slate-50);
+  border: 1px solid var(--ot-slate-200);
+  border-radius: 13px;
+  padding: 0.7rem 0.85rem;
+}
+
+[data-testid="stMetricLabel"] p {
+  font-size: 0.66rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ot-slate-500) !important;
+}
+
+[data-testid="stMetricValue"] {
+  font-family: "JetBrains Mono", ui-monospace, monospace !important;
+  font-size: 1.28rem !important;
+  font-weight: 800 !important;
+  color: var(--ot-slate-900) !important;
+  line-height: 1.2;
+}
+
+/* Entradas, selects y fechas */
+[data-baseweb="input"],
+[data-baseweb="base-input"],
+[data-baseweb="select"] > div,
+[data-baseweb="textarea"] {
+  background: var(--ot-slate-50) !important;
+  border-color: var(--ot-slate-200) !important;
+  border-radius: 11px !important;
+  transition: all 0.15s ease;
+}
+
+[data-baseweb="input"]:focus-within,
+[data-baseweb="base-input"]:focus-within,
+[data-baseweb="select"] > div:focus-within,
+[data-baseweb="textarea"]:focus-within {
+  background: #ffffff !important;
+  border-color: var(--ot-emerald) !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.14) !important;
+}
+
+[data-testid="stNumberInput"] input,
+[data-testid="stDateInput"] input,
+[data-testid="stTextInput"] input,
+[data-baseweb="select"] span {
+  font-family: "JetBrains Mono", ui-monospace, monospace !important;
+  font-size: 0.78rem !important;
+  color: var(--ot-slate-800) !important;
+}
+
+[data-testid="stNumberInput"] button {
+  border-color: var(--ot-slate-200) !important;
+  color: var(--ot-slate-500) !important;
+}
+
+[data-testid="stSlider"] [role="slider"] {
+  background: var(--ot-emerald) !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.35) !important;
+}
+
+[data-testid="stSlider"] [data-baseweb="slider"] div[role="slider"] + div {
+  background: var(--ot-emerald) !important;
+}
+
+[data-testid="stCheckbox"] label p {
+  font-size: 0.7rem !important;
+  color: var(--ot-slate-500) !important;
+}
+
+/* Botones */
+.stButton > button,
+.stFormSubmitButton > button,
+button[data-testid="stBaseButton-secondary"],
+button[data-testid="stBaseButton-primary"] {
+  border-radius: 11px !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  min-height: 2.3rem;
+  transition: all 0.15s ease;
+}
+
+button[data-testid="stBaseButton-secondary"],
+.stButton > button[kind="secondary"] {
+  background: var(--ot-slate-100) !important;
+  color: var(--ot-slate-700) !important;
+  border: 1px solid var(--ot-slate-200) !important;
+}
+
+button[data-testid="stBaseButton-secondary"]:hover,
+.stButton > button[kind="secondary"]:hover {
+  background: var(--ot-slate-200) !important;
+  color: var(--ot-slate-900) !important;
+  border-color: var(--ot-slate-300) !important;
+}
+
+button[data-testid="stBaseButton-primary"],
+.stFormSubmitButton > button {
+  background: var(--ot-emerald) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  box-shadow: 0 10px 20px -10px rgba(16, 185, 129, 0.65) !important;
+}
+
+button[data-testid="stBaseButton-primary"]:hover,
+.stFormSubmitButton > button:hover {
+  background: var(--ot-emerald-dark) !important;
+}
+
+/* Alertas y expansores */
+[data-testid="stAlert"] {
+  border-radius: 13px !important;
+  font-size: 0.76rem !important;
+  border-width: 1px !important;
+}
+
+[data-testid="stAlert"] p {
+  font-size: 0.76rem !important;
+  line-height: 1.5 !important;
+}
+
+[data-testid="stExpander"] {
+  border: 1px solid var(--ot-slate-200) !important;
+  border-radius: 13px !important;
+  background: var(--ot-slate-50) !important;
+}
+
+[data-testid="stExpander"] summary {
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  color: var(--ot-slate-700) !important;
+}
+
+[data-testid="stExpander"] [data-testid="stMarkdownContainer"] p {
+  font-size: 0.74rem !important;
+  line-height: 1.55 !important;
+  color: var(--ot-slate-600, #475569) !important;
+}
+
+/* Separadores internos del formulario */
+[data-testid="stForm"] {
+  border: 0 !important;
+  padding: 0 !important;
+}
+
+[data-testid="stVerticalBlockBorderWrapper"] {
+  border-radius: 16px;
+}
+
+/* Pie de la app */
+.ot-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--ot-slate-100);
+  margin-top: 1.35rem;
+  padding-top: 0.7rem;
+  font-size: 0.66rem;
+  color: var(--ot-slate-400);
+}
+
+.ot-footer strong {
+  color: var(--ot-slate-600, #475569);
+}
+
+/* Aviso cuando falta la llave de Google Maps */
+.ot-map-empty {
+  border: 1px dashed #cbd5e1;
+  border-radius: 1rem;
+  background: #f8fafc;
+  color: #475569;
+  padding: 1.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+.ot-map-empty strong { display: block; color: #0f172a; margin-bottom: 0.25rem; }
+
+/* ---------- Correcciones de legibilidad (v2) ---------- */
+
+/* Los íconos de Streamlit (flechas de los desplegables, etc.) usan una fuente propia:
+   la regla global de tipografía la pisaba y se veía el texto «_arrow_right». */
+[data-testid="stIconMaterial"],
+span[class*="material-symbols"] {
+  font-family: "Material Symbols Rounded", "Material Symbols Outlined" !important;
+  font-weight: normal !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}
+
+/* Textos secundarios más oscuros sobre fondo claro (en la tarjeta oscura se conservan los claros). */
+.st-key-ontrack_card {
+  --ot-slate-400: #64748b;
+  --ot-slate-500: #475569;
+}
+
+.st-key-ontrack_card .ot-card.dark {
+  --ot-slate-400: #94a3b8;
+  --ot-slate-500: #94a3b8;
+}
+
+[data-testid="stWidgetLabel"] p,
+[data-testid="stWidgetLabel"] label {
+  color: var(--ot-slate-800) !important;
+  font-weight: 600 !important;
+}
+
+[data-testid="stCheckbox"] label p {
+  font-size: 0.78rem !important;
+  color: var(--ot-slate-700) !important;
+  font-weight: 500 !important;
+}
+
+[data-testid="stExpander"] summary,
+[data-testid="stExpander"] summary p {
+  font-size: 0.8rem !important;
+  font-weight: 700 !important;
+  color: var(--ot-slate-800) !important;
+}
+
+[data-testid="stExpander"] [data-testid="stMarkdownContainer"] p,
+[data-testid="stExpander"] li {
+  color: var(--ot-slate-700) !important;
+}
+
+[data-testid="stCaptionContainer"] {
+  color: var(--ot-slate-500) !important;
+}
+
+/* Slider: números y barra en esmeralda en lugar del rojo por defecto */
+[data-testid="stSliderThumbValue"],
+[data-testid="stSliderTickBarMin"],
+[data-testid="stSliderTickBarMax"] {
+  color: var(--ot-emerald-dark) !important;
+  font-family: "JetBrains Mono", ui-monospace, monospace !important;
+  font-weight: 700 !important;
+}
+
+/* Valores escritos en los campos: oscuros y legibles en cualquier tema del navegador */
+[data-baseweb="input"] input,
+[data-baseweb="select"] div,
+[data-baseweb="select"] span,
+[data-testid="stDateInput"] input,
+[data-testid="stNumberInput"] input {
+  color: var(--ot-slate-900) !important;
+  -webkit-text-fill-color: var(--ot-slate-900) !important;
+  font-weight: 600 !important;
+}
+
+/* ---------- Dashboard con la estructura del prototipo ---------- */
+
+.ot-map-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 0.2rem 0 0.55rem;
+}
+
+.ot-map-head strong { font-size: 0.95rem; color: var(--ot-slate-900); }
+.ot-map-head span { font-size: 0.74rem; color: var(--ot-slate-500); }
+
+.ot-dash {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.9rem;
+  margin-top: 0.9rem;
+  align-items: start;
+}
+
+@media (max-width: 1000px) { .ot-dash { grid-template-columns: 1fr; } }
+
+.ot-stack { display: flex; flex-direction: column; gap: 0.9rem; }
+
+.ot-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.ot-card-head strong { font-size: 0.92rem; color: var(--ot-slate-900); }
+.ot-card-head span { font-size: 0.72rem; color: var(--ot-slate-500); font-weight: 600; }
+
+.ot-big-pair { display: flex; justify-content: space-between; gap: 1rem; margin-top: 0.4rem; }
+.ot-big { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 1.45rem; font-weight: 800; color: var(--ot-slate-900); line-height: 1.1; }
+.ot-big small { font-size: 0.7rem; color: var(--ot-slate-500); font-weight: 600; }
+.ot-big-label { font-size: 0.7rem; color: var(--ot-slate-500); margin-top: 0.15rem; }
+.ot-big.accent { color: var(--ot-emerald-dark); }
+
+.ot-spark { width: 100%; height: 92px; display: block; }
+
+.ot-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+.ot-mini {
+  border: 1px solid var(--ot-slate-200);
+  border-radius: 16px;
+  padding: 0.8rem 0.95rem;
+  background: #ffffff;
+}
+.ot-mini .l { font-size: 0.72rem; color: var(--ot-slate-500); font-weight: 600; }
+.ot-mini .v { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 1.35rem; font-weight: 800; color: var(--ot-slate-900); margin-top: 0.25rem; }
+.ot-mini .v small { font-size: 0.68rem; color: var(--ot-slate-500); }
+.ot-mini .pill {
+  display: inline-block; margin-top: 0.3rem; font-size: 0.64rem; font-weight: 700; padding: 0.1rem 0.5rem;
+  border-radius: 999px; background: var(--ot-emerald); color: #fff;
+}
+.ot-mini .pill.amber { background: var(--ot-amber); }
+
+.ot-trio { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; border-top: 1px solid var(--ot-slate-100); border-bottom: 1px solid var(--ot-slate-100); padding: 0.6rem 0; margin-bottom: 0.8rem; }
+.ot-trio .v { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 1.3rem; font-weight: 800; color: var(--ot-slate-900); }
+.ot-trio .l { font-size: 0.68rem; color: var(--ot-slate-500); }
+
+.ot-vbars { display: flex; align-items: flex-end; gap: 6px; height: 120px; margin-top: 0.7rem; }
+.ot-vbar { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; gap: 4px; }
+.ot-vbar i { display: block; width: 100%; border-radius: 6px 6px 3px 3px; background: var(--ot-slate-200); }
+.ot-vbar i.on { background: var(--ot-emerald); }
+.ot-vbar i.mid { background: var(--ot-amber); }
+.ot-vbar b { font-size: 0.64rem; color: var(--ot-slate-700); font-family: "JetBrains Mono", ui-monospace, monospace; }
+.ot-vbar span { font-size: 0.64rem; color: var(--ot-slate-500); }
+
+/* Texto del botón principal en blanco (antes salía verde oscuro sobre verde) */
+.stFormSubmitButton > button,
+.stFormSubmitButton > button p,
+button[data-testid="stBaseButton-primary"] p,
+button[data-testid="stBaseButton-primaryFormSubmit"],
+button[data-testid="stBaseButton-primaryFormSubmit"] p {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  font-weight: 700 !important;
+}
